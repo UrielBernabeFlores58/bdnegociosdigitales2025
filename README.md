@@ -7,4 +7,4 @@
 1. Manejo de Transacciones 
 1. Bases de datos No SQL con MongoDB
 
-![Base de Datos](./Image/ssj3.jpeg)
+![Base de Datos](./Image/image.jpeg)
