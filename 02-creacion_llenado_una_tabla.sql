@@ -108,6 +108,7 @@ add constraint fk_detalleorden_ordencompra
 foreign key (ordenfk)
 references ordencompra(ordenid);
 
+select * from categoria;
 
 
 

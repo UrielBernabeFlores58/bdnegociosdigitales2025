@@ -42,6 +42,14 @@ seleccionar el importe de cada uno de los productos vendidos, en una orden*/
 select *,(UnitPrice*Quantity) as importe from [Order Details];
 
 
+-- filas duplicadas,	Distinct
+
+ select * from Customers;
+ 
+ select distinct Country from Customers
+ order by Country;
+
+
 /* seleccionar las fechas en orden, año, mes , dia, el cliente que las ordeno
 y el empleado que la realizo*/
 
@@ -104,3 +112,47 @@ ShipName as Cliente from Orders
 where OrderDate = 1996
 ;
 
+
+/* mostar todas las ordenes de compra donde la cantidad de productos comprados
+sea mayor a 5 */
+
+
+select Quantity from [Order Details]
+
+where Quantity > 40;
+
+select* from Employees;
+
+select EmployeeID as Numero , FirstName as Nombre, LastName as Apellido,
+BirthDate as Nacimiento, City as Ciudad,
+HireDate as Contratacion
+from Employees
+where year(HireDate) > 1993;
+
+------------------------------ forma 2 forma de concatenar 2 campos en este caso nombre completo
+
+select EmployeeID as Numero , (FirstName+''+  LastName) as NombreCompleto,
+BirthDate as Nacimiento, City as Ciudad,
+HireDate as Contratacion
+from Employees
+where year(HireDate) > 1993;
+
+-------------------------------------- forma 3 concat 
+
+select EmployeeID as Numero , concat (FirstName, ' ' ,LastName) as [Nombre Completo],
+BirthDate as Nacimiento, City as Ciudad,
+HireDate as Contratacion
+from Employees
+where year(HireDate) > 1993;
+
+
+------------------------------------------- mostrar los empleados que no son dirigidos por el
+/* empleado por el jefe 2 */ 
+
+select FirstName as Nombre from Employees
+where ReportsTo <> 2;
+/*
+seleccionar empleados que no tengan jefe */
+
+select * from Employees
+where ReportsTo IS NULL;
