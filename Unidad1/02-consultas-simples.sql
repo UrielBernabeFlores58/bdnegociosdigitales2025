@@ -280,4 +280,88 @@ seleccionar ordenes que tengan cantidades de 12,9 o 40 y descuento de
  Discount in (0.15, 0.05);
 
 
--- Clausula Between
+-- Clausula Between (siempre va en el where)
+
+select * from Products
+where UnitPrice between 10 and 50;
+
+
+-- seleccionar todos los pedidos entre el primero de enero y 30 de junio
+
+
+select * from Orders
+where OrderDate >= '1997-01-01' AND OrderDate <= '1997-06-30';
+
+
+select * from Orders
+where OrderDate between '1997-01-01' and '1997-06-30' ;
+
+
+-- seleccionar todos los empleados contratados entre 1990 y 1995 que trabajan en lontdres
+
+select * from Employees
+where year(HireDate) between '1992' and '1994'
+and City = 'London'
+;
+
+-- PEDIDOS CON FREIGTH ENTRE 50 Y 200 ENVIADOS A ALEMANIA Y A FRANCIA
+
+select OrderID,ShipCity, Freight,ShipCountry from Orders
+where Freight between 50 and 200 and 
+(ShipCountry = 'Germany' or ShipCountry = 'France')
+;
+
+
+-- seleciionar todos los productos que tengan un precio entre 5 y 20 dls o que sean de la categoria 1,2,3
+-- seleccionar 
+
+
+select ProductName, CategoryID, UnitPrice from Products
+where UnitPrice between 5 and 20 and
+CategoryID in (1,2,3)
+;
+
+-- EMPLEADOS CON NUMEROS DE TRABAJADOR EMTRE 3 Y 7 QUE NO TRABAJAN EN LONDRES NI SEATTLE
+
+select EmployeeID as 'Numero de empleado', concat (FirstName, LastName) as 'Nombre Completo', City as 'Ciudad' from Employees
+where EmployeeID between 3 and 7
+and not City in ('London', 'Seattle')
+;
+
+-- clausula like
+/*
+		patrones
+		1) "%" representa cero o mas caracteres en el patron de busqueda 
+		2) "_" representa exactamente un caracter en el patron de busqueda
+		3) "[]"  se utliza para definir un conjunto de caracteres buscando cualquiera de ellos 
+		en la posicion especifica
+		4) "[^ ]"  se utiliza para buscar cacateres que no estan dentro del conjunto especifico
+
+buscar los productos que comienzan con cha
+*/
+-- c
+select * from Products
+where ProductName Like 'C%'
+
+select * from Products
+where ProductName Like 'Cha%'
+
+
+select * from Products
+where ProductName Like 'Cha%'
+and UnitPrice=18;
+
+
+select * from Products
+where ProductName Like '%e'
+;
+
+select * from Customers
+where CompanyName like '%co%'
+;
+
+
+-- buscar empleados cuyo nombre comience con a y que tenga 5 caracteres
+
+select FirstName, LastName from Employees
+where FirstName like 'a_____'
