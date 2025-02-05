@@ -365,3 +365,62 @@ where CompanyName like '%co%'
 
 select FirstName, LastName from Employees
 where FirstName like 'a_____'
+
+
+-- SELECCIONAR LOS PRODUCTOS QUE COMIENCEN CON A O B
+
+select * from Products
+where ProductName Like '[AB]%'
+
+-- SI PIDEN RANGO 
+
+
+select * from Products
+where ProductName Like '[A=M]%'
+
+
+-- TODOS LOS PRODUCTOS QUE NO COMIENCEN CON A O B
+
+
+select * from Products
+where ProductName Like '[^AB]%'
+--or
+
+select * from Products
+where ProductName not Like '[AB]%'
+
+/* seleccionar todos los productos donde el nombre comience con a
+pero no contenga la e
+*/
+
+select * from Products
+where ProductName Like 'A[^e]%'
+
+
+select * from Products
+where ProductName Like 'a%' and
+ProductName not like '%e'
+
+
+-- clausula order by(asendente de min a max, decendente max a min)
+
+select ProductID, ProductName, UnitPrice, UnitsInStock from Products
+order by UnitPrice 
+
+--( podemos poner la columna)
+
+select ProductID, ProductName, UnitPrice as Precio, UnitsInStock from Products
+order by 3 desc
+
+--
+
+select CustomerID, Country, City from Customers
+order by Country asc , City asc
+
+
+select CustomerID, Country, City, Region from Customers
+where country IN ('Brazil', 'Germany')
+and Region is null
+order by Country desc , City desc
+
+
