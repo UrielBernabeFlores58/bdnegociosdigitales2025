@@ -1,3 +1,8 @@
+# Inner Join
+ ![Inner Join](../img/img_inner_join.png)
+
+
+ ``` sql
 /* 07/02/2025
  JOINS
  INNER 
@@ -456,3 +461,6 @@ join
 on o.OrderID = od.OrderID
 group by c.CompanyName
 having sum (od.Quantity * od.UnitPrice) between '500' and '2000'
+
+```
+-- left join, rigyh join, full join y cross join
