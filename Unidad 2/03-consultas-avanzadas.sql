@@ -1,3 +1,4 @@
+
 /* 07/02/2025
  JOINS
  INNER 
@@ -376,7 +377,7 @@ on o.EmployeeID = e.EmployeeID
 group by e.FirstName, e.LastName
 order by Empleados asc
 
--- 21 listar las categorias con el total de ingresps generados por sus productos 
+-- 21 listar las categorias con el total de ingresos generados por sus productos 
 
 select c.CategoryName, sum (od.Quantity * od.UnitPrice) as Total from 
 Categories as c
@@ -386,6 +387,7 @@ on c.CategoryID = p.CategoryID
 join
 [Order Details] as od
 on p.ProductID = od.ProductID
+group by c.CategoryName
 -----------------------------------------------------------------------------------------------------------
 select c.CategoryName,p.ProductName, sum (od.Quantity * od.UnitPrice) as Total from 
 Categories as c
@@ -456,3 +458,30 @@ join
 on o.OrderID = od.OrderID
 group by c.CompanyName
 having sum (od.Quantity * od.UnitPrice) between '500' and '2000'
+
+
+-- left join , rigth join, full join, cross join
+
+/* practica de utilizacion de left join
+
+seleccionar los datos qyuese van a utilizar para insertar en la tabla 
+products_new
+
+product id, productname, customer ciente, category(name), unitprice , discontinued y insterted_date
+*/
+select c.categoriaid, c.nombre, p.categoriaid, p.productoid, p.nombre
+from Categorias as c
+inner join Productos as p
+on p.categoriaid = c.categoriaid
+
+select c.categoriaid, c.nombre, p.categoriaid, p.productoid, p.nombre
+from Categorias as c
+left join Productos as p
+on p.categoriaid = c.categoriaid
+
+select c.categoriaid, c.nombre, p.categoriaid, p.productoid, p.nombre
+from Productos as p
+left join Categorias as c
+on p.categoriaid = c.categoriaid
+
+

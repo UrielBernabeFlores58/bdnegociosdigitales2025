@@ -53,7 +53,8 @@ select *,(UnitPrice*Quantity) as importe from [Order Details];
 /* seleccionar las fechas en orden, año, mes , dia, el cliente que las ordeno
 y el empleado que la realizo*/
 
-select OrderDate,year(OrderDate) as Año, month(OrderDate) as Mes, DAY(OrderDate) as Dia,CustomerID, EmployeeID from Orders;
+
+select year(OrderDate) as Año, month(OrderDate) as Mes, DAY(OrderDate) as Dia,CustomerID, EmployeeID from Orders;
 
 /* clausula where 
 operadores relacionales (<,>,=,<=,>=, != o <>)
