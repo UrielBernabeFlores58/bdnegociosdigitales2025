@@ -1,368 +1,309 @@
 ## Store Procedures
 
-
 ## Ejercicio 8 de la Unidad 2
 
-``` sql
+```sql
+--- Crear un store procedure para seleccionar todos los clientes
 
---- crear un store procedure para seleccionar todos los clientes
+CREATE OR ALTER PROCEDURE spu_mostrar_clientes
+AS
+BEGIN 
+    SELECT * FROM Customers;
+END;
+GO  
 
+EXEC spu_mostrar_clientes;
+GO
 
-create or alter procedure spu_mostrar_clientes
-as
-	 begin 
-select * from Customers
-end;
-go  
+-- Crear un sp que muestre los clientes por pais
+-- Parámetros de entrada
 
-exec spu_mostrar_clientes
-go
+CREATE OR ALTER PROC spu_customersporpais
+-- Parámetros 
+@pais NVARCHAR(15), -- Parámetro de entrada
+@pais2 NVARCHAR(16)
+AS
+BEGIN
+    SELECT * FROM Customers
+    WHERE Country IN (@pais, @pais2);
+END;
 
--- crear un sp que muestre los clientes por pais
--- parametros de entrada
+EXEC spu_customersporpais 'Spain', 'Germany';
 
-create or alter proc spu_customersporpais
--- parametros 
-@pais  nvarchar(15), -- parametro de entrada
-@pais2 nvarchar(16)
-	as
-	begin
-	select * from Customers
-	where Country in (@pais, @pais2);
-	end;
+-- Opción con variables
+DECLARE @p1 NVARCHAR(15) = 'spain';
+DECLARE @p2 NVARCHAR(15) = 'germany';
 
+EXEC spu_customersporpais @p1, @p2;
+GO
 
-exec spu_customersporpais 'Spain', 'Germany'
-
--- o
-
-declare @p1 nvarchar(15) = 'spain';
-declare @p2 nvarchar(15) = 'germany';
-
-exec spu_customersporpais @p1, @p2;
-go
 /*
--- crea un reporte que permita visualizar los datos de compra de un determinado cliente
-en un rango de fechad mostrando el mosto total de compras por un producto mediante un sp
+-- Crear un reporte que permita visualizar los datos de compra de un determinado cliente
+en un rango de fechas mostrando el monto total de compras por un producto mediante un sp
 */
 
-create or alter proc spu_informe_ventas_clientes
--- parametros
-@nombre nvarchar(40), -- parametro de entrada con valor por default
-@fechaInicial datetime,
-@fechaFinal datetime
-as 
-begin
-select [nombre producto], sum (importe) as [Monto Total] from VistaOrdenesdeCompra
-where [Nombre del cliente] = @nombre
-and [Fecha de Orden] between @fechaInicial and @fechaFinal
-group by [nombre producto], [Nombre del cliente]
-end
-go
+CREATE OR ALTER PROC spu_informe_ventas_clientes
+-- Parámetros
+@nombre NVARCHAR(40), -- Parámetro de entrada con valor por defecto
+@fechaInicial DATETIME,
+@fechaFinal DATETIME
+AS 
+BEGIN
+    SELECT [nombre producto], SUM(importe) AS [Monto Total] 
+    FROM VistaOrdenesdeCompra
+    WHERE [Nombre del cliente] = @nombre
+      AND [Fecha de Orden] BETWEEN @fechaInicial AND @fechaFinal
+    GROUP BY [nombre producto], [Nombre del cliente];
+END;
+GO
 
+CREATE OR ALTER PROC spu_informe_ventas_clientes
+-- Parámetros
+@nombre NVARCHAR(40) = 'Berglunds snabbk�p', -- Parámetro de entrada con valor por defecto
+@fechaInicial DATETIME,
+@fechaFinal DATETIME
+AS 
+BEGIN
+    SELECT [nombre producto], [Nombre del cliente], SUM(importe) AS [Monto Total] 
+    FROM VistaOrdenesdeCompra
+    WHERE [Nombre del cliente] = @nombre
+      AND [Fecha de Orden] BETWEEN @fechaInicial AND @fechaFinal
+    GROUP BY [nombre producto], [Nombre del cliente];
+END;
+GO
 
+SELECT GETDATE();
 
-create or alter proc spu_informe_ventas_clientes
--- parametros
-@nombre nvarchar(40) = 'Berglunds snabbk�p', -- parametro de entrada con valor por default
-@fechaInicial datetime,
-@fechaFinal datetime
-as 
-begin
-select [nombre producto], [Nombre del cliente] ,sum (importe) as [Monto Total] from VistaOrdenesdeCompra
-where [Nombre del cliente] = @nombre
-and [Fecha de Orden] between @fechaInicial and @fechaFinal
-group by [nombre producto], [Nombre del cliente]
-end
-go
+-- Ejecución de un store con parámetros de entrada
+EXEC spu_informe_ventas_clientes 'Berglunds snabbk�p', '1996-07-04', '1997-01-01';
 
-select GETDATE()
+-- Ejecución de un store con parámetros en diferente posición
+EXEC spu_informe_ventas_clientes @FechaInicial = '1996-07-04', @FechaFinal = '1997-01-01';
 
--- ejecucion de un store con parametros de entrada
-exec spu_informe_ventas_clientes 'Berglunds snabbk�p', '1996-07-04', '1997-01-01'
+-- Ejecución de un store con parámetros de entrada con un campo que tiene un valor por defecto
+EXEC spu_informe_ventas_clientes @FechaFinal = '1997-01-01', @nombre = 'Berglunds snabbk�p', @FechaInicial = '1996-07-04';
 
--- ejecucion de un store con parametros en diferente posicion
-exec spu_informe_ventas_clientes @FechaInicial = '1996-07-04',
-							@FechaFinal ='1997-01-01'
+-- Store procedure con parámetros de salida
+CREATE OR ALTER PROC spu_obtener_numero_clientes
+@customerid NCHAR(5), -- Parámetro de entrada,
+@totalCustomers INT OUTPUT -- Parámetro de salida
+AS 
+BEGIN
+    SELECT @totalCustomers = COUNT(*) FROM Customers
+    WHERE CustomerID = @customerid;
+END;
+GO
 
--- ejecucion de un store con parametros de entrada con un campo que tiene un valor por default
-exec spu_informe_ventas_clientes @FechaFinal ='1997-01-01',@nombre = 'Berglunds snabbk�p',
-@FechaInicial = '1996-07-04'
+-- Declarar una variable para el total de clientes
+DECLARE @numero INT; 
+EXEC spu_obtener_numero_clientes 'ANATR', @totalCustomers = @numero OUTPUT;
+PRINT @numero;
+GO
 
-
--- store procedure con parametros de salida
-create or alter proc spu_obtener_numero_clientes
-@customerid nchar(5),--parametro de entrada,
-@totalCustomers int output -- parametro de  salida
-as 
-begin
-select @totalCustomers = count(*) from Customers
-where CustomerID = @customerid;
-end;
-go
-
-
-
---declare @numero as int;
-declare @numero int 
-exec spu_obtener_numero_clientes 'ANATR',
-@totalCustomers = @numero output;
-print @numero;
-go
-
-
-
--- STORE PROCEDURE QUE PERMITA SABER SI UN ALUMNO APROBO O REPROBO
-
-create or alter proc spu_comparar_calificacion
-@calificacion decimal(10,2) --parametro de entrada
+-- Store procedure que permita saber si un alumno aprobó o reprobó
+CREATE OR ALTER PROC spu_comparar_calificacion
+@calificacion DECIMAL(10,2) -- Parámetro de entrada
 AS
-begin
-	if @calificacion>=0 and @calificacion <=10
-		begin
-			if @calificacion>=8
-				print 'La calificacion es aprobatoria'
-			else 
-				print 'La calificacion es reprobatoria'
-		end
-			else 
-				print 'Calificacion no valida'
-	end;
-go	
+BEGIN
+    IF @calificacion >= 0 AND @calificacion <= 10
+    BEGIN
+        IF @calificacion >= 8
+            PRINT 'La calificación es aprobatoria';
+        ELSE 
+            PRINT 'La calificación es reprobatoria';
+    END
+    ELSE 
+        PRINT 'Calificación no válida';
+END;
+GO	
 
+EXEC spu_comparar_calificacion @calificacion = <valor>;
 
-exec spu_comparar_calificacion @calificacion =  
-
-
-
--- crear un sp que permita verificar si un cliente existe antes de devolver su informacion
-
-		create or alter proc spu_obtener_cliente_siexiste
-		@numeroCliente nchar(5)
-		as
-		begin
-				if exists(select 1 from Customers where CustomerID = @numeroCliente)
-				select * from Customers where CustomerID = @numeroCliente;
-				else
-					print 'El cliente no existe'
-		end;
-		go
-
-select 1 from Customers where CustomerID = 'ANATR'
-
-
-exec spu_obtener_cliente_siexiste @numeroCliente = 'Arout'
-
--- crear un store procedure que permita insertar un cliente
--- pero se debe verificar primero que no exista
-
-
-
-
-create or alter proc spu_agregar_cliente
-	@id nchar(5),
-	@nombre varchar(40),
-	@city nvarchar(15) = 'San Miguel'
-	as
-	begin
-	if exists (select 1 from Customers where CustomerID = @id)
-		begin
-		print ('El Cliente ya existe')
-		return 1
-	end
-	insert into Customers (CustomerID, CompanyName)
-	values (@id,@nombre);
-	print ('Cliente insertado exitosamente');
-	return 0;
-end;
-	go
-
-	-- exec spu_agregar_cliente 'ORDEP', 'Industrias Corporativas SACV', 'San Miguel'
-execute spu_agregar_cliente 'AlFKI', 'Patito�de�Hule'
-execute spu_agregar_cliente 'AlFKC', 'Patito�de�Hule'
-
-
-create or alter procedure spu_agregar_cliente_try_catch
-	@id nchar(5),
-	@nombre nvarchar(40),
-	@city nvarchar(15) = 'San Miguel'
+-- Crear un sp que permita verificar si un cliente existe antes de devolver su información
+CREATE OR ALTER PROC spu_obtener_cliente_siexiste
+@numeroCliente NCHAR(5)
 AS
-begin
-	begin try
-	insert into Customers(CustomerID, CompanyName)
-	values(@id,@nombre);
-	print('Cliente insertado exitosamente');
-	end try
-	begin catch
-		print('El cliente ya existe');
-	end catch
-end;
+BEGIN
+    IF EXISTS (SELECT 1 FROM Customers WHERE CustomerID = @numeroCliente)
+        SELECT * FROM Customers WHERE CustomerID = @numeroCliente;
+    ELSE
+        PRINT 'El cliente no existe';
+END;
+GO
 
-exec spu_agregar_cliente 'ALFKD', 'Mu�eca�Vieja'
-go
-create or alter procedure spu_ciclo_imprimir
-	@numero int
+SELECT 1 FROM Customers WHERE CustomerID = 'ANATR';
+
+EXEC spu_obtener_cliente_siexiste @numeroCliente = 'Arout';
+
+-- Crear un store procedure que permita insertar un cliente
+-- Pero se debe verificar primero que no exista
+CREATE OR ALTER PROC spu_agregar_cliente
+@id NCHAR(5),
+@nombre VARCHAR(40),
+@city NVARCHAR(15) = 'San Miguel'
 AS
-begin
+BEGIN
+    IF EXISTS (SELECT 1 FROM Customers WHERE CustomerID = @id)
+    BEGIN
+        PRINT ('El Cliente ya existe');
+        RETURN 1;
+    END
+    INSERT INTO Customers (CustomerID, CompanyName)
+    VALUES (@id, @nombre);
+    PRINT ('Cliente insertado exitosamente');
+    RETURN 0;
+END;
+GO
 
-	if  @numero<=0
-	begin
-		print('El numero no puede ser 0 o negativo');
-		return
-	end
-----------
-	declare @i int
-	SET @i = 1
-	while(@i<=@numero)
-	begin
-	print('Numero '+ @i);
-	end
-end;
-go
+-- Execuciones de ejemplo
+EXEC spu_agregar_cliente 'ORDEP', 'Industrias Corporativas SACV', 'San Miguel';
+EXECUTE spu_agregar_cliente 'AlFKI', 'Patito� de Hule';
+EXECUTE spu_agregar_cliente 'AlFKC', 'Patito� de Hule';
 
-exec  spu_ciclo_imprimir
-
--- Imprimir el numero de veces que indique el usuario
-go
-create or alter procedure spu_ciclo_imprimir
-	@numero int
+CREATE OR ALTER PROCEDURE spu_agregar_cliente_try_catch
+@id NCHAR(5),
+@nombre NVARCHAR(40),
+@city NVARCHAR(15) = 'San Miguel'
 AS
-begin
+BEGIN
+    BEGIN TRY
+        INSERT INTO Customers (CustomerID, CompanyName)
+        VALUES (@id, @nombre);
+        PRINT('Cliente insertado exitosamente');
+    END TRY
+    BEGIN CATCH
+        PRINT('El cliente ya existe');
+    END CATCH;
+END;
 
-	if  @numero<=0
-	begin
-		print('El numero no puede ser 0 o negativo');
-		return
-	end
-----------
-	declare @i int
-	SET @i = 1
-	while(@i<=@numero)
-	begin
-	print concat('Numero ', @i);
-	SET @i = @i+1
-	end
-end;
-go
+EXEC spu_agregar_cliente 'ALFKD', 'Mu�eca� Vieja';
+GO
 
-exec spu_ciclo_imprimir @numero = 100
+CREATE OR ALTER PROCEDURE spu_ciclo_imprimir
+@numero INT
+AS
+BEGIN
+    IF @numero <= 0
+    BEGIN
+        PRINT('El número no puede ser 0 o negativo');
+        RETURN;
+    END
 
+    DECLARE @i INT;
+    SET @i = 1;
 
+    WHILE (@i <= @numero)
+    BEGIN
+        PRINT('Número ' + @i);
+    END;
+END;
+GO
 
-
+EXEC spu_ciclo_imprimir @numero = 100;
 
 -- Realizar un pedido con un Store Procedure
 -- Validar que el pedido no exista
--- Validar que el cliente, que el empleado y producto exista
--- La cantidad a vender, debe ser validada, que haya suficiente stock del producto
+-- Validar que el cliente, el empleado y el producto existan
+-- La cantidad a vender debe ser validada, que haya suficiente stock del producto
 -- Insertar el pedido y calcular el importe (multiplicando el precio del producto
 -- por la cantidad vendida)
--- Actualizar el stock del producto(restando el stock menos la cantidad vendida)
+-- Actualizar el stock del producto (restando el stock menos la cantidad vendida)
 
-
-use BDEJEMPLO2
-select * from Pedidos
-go
-create or alter procedure spu_pedido_submit
-@numpedido int,
-@cliente int,
-@rep int,
-@fab char(3),
-@producto char(5),
-@cantidad int
-AS
-begin
-	if exists (select 1 from Pedidos where Num_Pedido = @numpedido)
-	begin
-		print('El pedido ya existe');
-		return
-	end	
-
-	if not exists (select 1 from Clientes where Num_Cli = @cliente) or
-	   not exists (select 1 from Representantes where Num_Empl = @rep) or
-	   not exists (select 1 from Productos where Id_fab = @fab and Id_producto = @producto)
-	begin
-		print('Los datos no son validos')
-		return
-	end
-
-	if @cantidad <=0 
-	begin
-		print ('La cantidad no puede ser 0 o negativo')
-		return;
-	end
-	declare @stockValido int
-	select @stockValido = stock from Productos where Id_fab = @fab and Id_producto = @producto
-		if @cantidad > @stockValido
-		begin
-		print 'No hay Suficiente Stock'
-		return;
-	end
-	
-	declare @precio money, @importe money
-
-	select @precio =Precio from Productos where Id_fab = @fab and Id_producto = @producto
-	set @importe = @cantidad * @precio	
-	
-	begin try -- si no entra se va al print si el que sigue
-	-- se inserto un pedido
-	insert into Pedidos
-	values (@numpedido, getdate(), @cliente, @rep, @fab, @producto, @cantidad, @importe)
-	update Productos
-	set Stock = Stock - @cantidad
-		where Id_fab =  @fab and Id_producto = @producto
-	end try
-		begin catch
-			print 'Error al actualizar datos'
-			return;
-	end catch
-	
-end
---(Num_Pedido, Cliente, Rep, Fab, Producto, Cantidad)
-go
-
-execute spu_pedido_submit @numpedido = 112961, @cliente = 2117, @rep =106, 
-@fab ='REI', @producto ='2A44L', @cantidad =20
-
-execute spu_pedido_submit @numpedido = 11370, @cliente = 2117, @rep =111, 
-@fab ='REI', @producto ='2A44L', @cantidad =20
-
-execute spu_pedido_submit @numpedido = 11370, @cliente = 2117, @rep =101, 
-@fab ='ACI', @producto ='4100X', @cantidad =20
-
-select * from Productos
-where Id_fab = 'ACI' and Id_producto = '4100x'
-
-
-
-
-/*
-
-
-
-
-
-
-create or alter procedure sp_datos_de_compra
-@NumerodeOrden int,
-@OrdenFecha datetime ,
-@Total money
-as
- select * from VistaOrdenesdeCompra
- where year ([Fecha de Orden]) in (1996,1998)
- 
-
- exec sp_datos_de_compra @NumerodeOrden  = 10250,
- @OrdenFecha = 1998, @Total = 26.00
- drop procedure sp_datos_de_compra
-
-  select [Nombre del cliente] from VistaOrdenesdeCompra
-  order by 1 asc
+USE BDEJEMPLO2;
+SELECT * FROM Pedidos;
 GO
 
-*/ 
+CREATE OR ALTER PROCEDURE spu_pedido_submit
+@numpedido INT,
+@cliente INT,
+@rep INT,
+@fab CHAR(3),
+@producto CHAR(5),
+@cantidad INT
+AS
+BEGIN
+    IF EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
+    BEGIN
+        PRINT('El pedido ya existe');
+        RETURN;
+    END	
 
--- examples Registrar un nuevo cliente
+    IF NOT EXISTS (SELECT 1 FROM Clientes WHERE Num_Cli = @cliente) OR
+       NOT EXISTS (SELECT 1 FROM Representantes WHERE Num_Empl = @rep) OR
+       NOT EXISTS (SELECT 1 FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto)
+    BEGIN
+        PRINT('Los datos no son válidos');
+        RETURN;
+    END
+
+    IF @cantidad <= 0 
+    BEGIN
+        PRINT('La cantidad no puede ser 0 o negativa');
+        RETURN;
+    END
+
+    DECLARE @stockValido INT;
+    SELECT @stockValido = stock FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto;
+
+    IF @cantidad > @stockValido
+    BEGIN
+        PRINT 'No hay suficiente stock';
+        RETURN;
+    END
+	
+    DECLARE @precio MONEY, @importe MONEY;
+    SELECT @precio = Precio FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto;
+    SET @importe = @cantidad * @precio;	
+	
+    BEGIN TRY
+        -- Se inserta un pedido
+        INSERT INTO Pedidos
+        VALUES (@numpedido, GETDATE(), @cliente, @rep, @fab, @producto, @cantidad, @importe);
+        UPDATE Productos
+        SET Stock = Stock - @cantidad
+        WHERE Id_fab = @fab AND Id_producto = @producto;
+    END TRY
+    BEGIN CATCH
+        PRINT 'Error al actualizar datos';
+        RETURN;
+    END CATCH;
+END;
+-- (Num_Pedido, Cliente, Rep, Fab, Producto, Cantidad);
+GO
+
+EXECUTE spu_pedido_submit @numpedido = 112961, @cliente = 2117, @rep = 106, @fab = 'REI', @producto = '2A44L', @cantidad = 20;
+
+EXECUTE spu_pedido_submit @numpedido = 11370, @cliente = 2117, @rep = 111, @fab = 'REI', @producto = '2A44L', @cantidad = 20;
+
+EXECUTE spu_pedido_submit @numpedido = 11370, @cliente = 2117, @rep = 101, @fab = 'ACI', @producto = '4100X', @cantidad = 20;
+
+SELECT * FROM Productos WHERE Id_fab = 'ACI' AND Id_producto = '4100x';
+
+/*
+create or alter procedure sp_datos_de_compra
+@NumerodeOrden INT,
+@OrdenFecha DATETIME,
+@Total MONEY
+AS
+    SELECT * FROM VistaOrdenesdeCompra
+    WHERE YEAR([Fecha de Orden]) IN (1996, 1998);
+ 
+EXEC sp_datos_de_compra @NumerodeOrden = 10250, @OrdenFecha = 1998, @Total = 26.00;
+DROP PROCEDURE sp_datos_de_compra;
+
+SELECT [Nombre del cliente] FROM VistaOrdenesdeCompra
+ORDER BY 1 ASC;
+GO
+*/
+
+
+
+```
+
+## Ejemplos de Prueba (No son de clase)
+
+``` sql
+-- Registrar un nuevo cliente
 CREATE OR ALTER PROCEDURE spu_cliente_insert
     @num_cli INT,
     @empresa VARCHAR(20),
@@ -372,17 +313,17 @@ AS
 BEGIN
     IF EXISTS (SELECT 1 FROM Clientes WHERE Num_Cli = @num_cli)
     BEGIN
-        PRINT 'El cliente ya existe'
-        RETURN
+        PRINT 'El cliente ya existe';
+        RETURN;
     END
 
     INSERT INTO Clientes (Num_Cli, Empresa, Rep_Cli, Limite_Credito)
-    VALUES (@num_cli, @empresa, @rep_cli, @limite_credito)
+    VALUES (@num_cli, @empresa, @rep_cli, @limite_credito);
 
-    PRINT 'Cliente registrado exitosamente'
-END
+    PRINT 'Cliente registrado exitosamente';
+END;
 
--- 2 Este procedimiento actualiza el l�mite de cr�dito de un cliente existente.
+-- 2 Este procedimiento actualiza el límite de crédito de un cliente existente.
 CREATE OR ALTER PROCEDURE spu_cliente_update_credito
     @num_cli INT,
     @nuevo_limite MONEY
@@ -390,40 +331,40 @@ AS
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Clientes WHERE Num_Cli = @num_cli)
     BEGIN
-        PRINT 'El cliente no existe'
-        RETURN
+        PRINT 'El cliente no existe';
+        RETURN;
     END
 
     UPDATE Clientes
     SET Limite_Credito = @nuevo_limite
-    WHERE Num_Cli = @num_cli
+    WHERE Num_Cli = @num_cli;
 
-    PRINT 'L�mite de cr�dito actualizado'
-END
+    PRINT 'Límite de crédito actualizado';
+END;
 
---3 Este procedimiento elimina un cliente si no tiene pedidos.
+-- 3 Este procedimiento elimina un cliente si no tiene pedidos.
 CREATE OR ALTER PROCEDURE spu_cliente_delete
     @num_cli INT
 AS
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Clientes WHERE Num_Cli = @num_cli)
     BEGIN
-        PRINT 'El cliente no existe'
-        RETURN
+        PRINT 'El cliente no existe';
+        RETURN;
     END
 
     IF EXISTS (SELECT 1 FROM Pedidos WHERE Cliente = @num_cli)
     BEGIN
-        PRINT 'No se puede eliminar el cliente porque tiene pedidos registrados'
-        RETURN
+        PRINT 'No se puede eliminar el cliente porque tiene pedidos registrados';
+        RETURN;
     END
 
-    DELETE FROM Clientes WHERE Num_Cli = @num_cli
+    DELETE FROM Clientes WHERE Num_Cli = @num_cli;
 
-    PRINT 'Cliente eliminado correctamente'
-END
+    PRINT 'Cliente eliminado correctamente';
+END;
 
---4 Este procedimiento es similar al que compartiste, pero optimizado.
+-- 4 Este procedimiento es similar al que compartiste, pero optimizado.
 CREATE OR ALTER PROCEDURE spu_pedido_insert
     @numpedido INT,
     @cliente INT,
@@ -433,102 +374,103 @@ CREATE OR ALTER PROCEDURE spu_pedido_insert
     @cantidad INT
 AS
 BEGIN
-    DECLARE @stock INT, @precio MONEY, @importe MONEY
+    DECLARE @stock INT, @precio MONEY, @importe MONEY;
 
     IF EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
     BEGIN
-        PRINT 'El pedido ya existe'
-        RETURN
+        PRINT 'El pedido ya existe';
+        RETURN;
     END
 
     IF NOT EXISTS (SELECT 1 FROM Clientes WHERE Num_Cli = @cliente)
         OR NOT EXISTS (SELECT 1 FROM Representantes WHERE Num_Empl = @rep)
         OR NOT EXISTS (SELECT 1 FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto)
     BEGIN
-        PRINT 'Datos inv�lidos'
-        RETURN
+        PRINT 'Datos inválidos';
+        RETURN;
     END
 
     IF @cantidad <= 0 
     BEGIN
-        PRINT 'Cantidad inv�lida'
-        RETURN
+        PRINT 'Cantidad inválida';
+        RETURN;
     END
 
-    SELECT @stock = Stock, @precio = Precio FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto
+    SELECT @stock = Stock, @precio = Precio FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto;
 
     IF @cantidad > @stock
     BEGIN
-        PRINT 'Stock insuficiente'
-        RETURN
+        PRINT 'Stock insuficiente';
+        RETURN;
     END
 
-    SET @importe = @cantidad * @precio
+    SET @importe = @cantidad * @precio;
 
-    BEGIN TRANSACTION
-    INSERT INTO Pedidos VALUES (@numpedido, GETDATE(), @cliente, @rep, @fab, @producto, @cantidad, @importe)
-    UPDATE Productos SET Stock = Stock - @cantidad WHERE Id_fab = @fab AND Id_producto = @producto
-    COMMIT TRANSACTION
+    BEGIN TRANSACTION;
+    INSERT INTO Pedidos VALUES (@numpedido, GETDATE(), @cliente, @rep, @fab, @producto, @cantidad, @importe);
+    UPDATE Productos SET Stock = Stock - @cantidad WHERE Id_fab = @fab AND Id_producto = @producto;
+    COMMIT TRANSACTION;
 
-    PRINT 'Pedido registrado correctamente'
-END
---5 Este procedimiento permite modificar la cantidad de un producto en un pedido
+    PRINT 'Pedido registrado correctamente';
+END;
+
+-- 5 Este procedimiento permite modificar la cantidad de un producto en un pedido
 CREATE OR ALTER PROCEDURE spu_pedido_update_cantidad
     @numpedido INT,
     @cantidad_nueva INT
 AS
 BEGIN
-    DECLARE @cantidad_actual INT, @producto CHAR(5), @fab CHAR(3), @stock INT, @precio MONEY, @importe MONEY
+    DECLARE @cantidad_actual INT, @producto CHAR(5), @fab CHAR(3), @stock INT, @precio MONEY, @importe MONEY;
 
     IF NOT EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
     BEGIN
-        PRINT 'El pedido no existe'
-        RETURN
+        PRINT 'El pedido no existe';
+        RETURN;
     END
 
-    SELECT @producto = Producto, @fab = Fab, @cantidad_actual = Cantidad FROM Pedidos WHERE Num_Pedido = @numpedido
-    SELECT @stock = Stock, @precio = Precio FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto
+    SELECT @producto = Producto, @fab = Fab, @cantidad_actual = Cantidad FROM Pedidos WHERE Num_Pedido = @numpedido;
+    SELECT @stock = Stock, @precio = Precio FROM Productos WHERE Id_fab = @fab AND Id_producto = @producto;
 
     IF @cantidad_nueva > (@stock + @cantidad_actual)
     BEGIN
-        PRINT 'Stock insuficiente'
-        RETURN
+        PRINT 'Stock insuficiente';
+        RETURN;
     END
 
-    SET @importe = @cantidad_nueva * @precio
+    SET @importe = @cantidad_nueva * @precio;
 
-    BEGIN TRANSACTION
-    UPDATE Pedidos SET Cantidad = @cantidad_nueva, Importe = @importe WHERE Num_Pedido = @numpedido
-    UPDATE Productos SET Stock = Stock + @cantidad_actual - @cantidad_nueva WHERE Id_fab = @fab AND Id_producto = @producto
-    COMMIT TRANSACTION
+    BEGIN TRANSACTION;
+    UPDATE Pedidos SET Cantidad = @cantidad_nueva, Importe = @importe WHERE Num_Pedido = @numpedido;
+    UPDATE Productos SET Stock = Stock + @cantidad_actual - @cantidad_nueva WHERE Id_fab = @fab AND Id_producto = @producto;
+    COMMIT TRANSACTION;
 
-    PRINT 'Cantidad de pedido actualizada'
-END
+    PRINT 'Cantidad de pedido actualizada';
+END;
 
---6 Este procedimiento elimina un pedido y regresa el stock.
+-- 6 Este procedimiento elimina un pedido y regresa el stock.
 CREATE OR ALTER PROCEDURE spu_pedido_delete
     @numpedido INT
 AS
 BEGIN
-    DECLARE @cantidad INT, @producto CHAR(5), @fab CHAR(3)
+    DECLARE @cantidad INT, @producto CHAR(5), @fab CHAR(3);
 
     IF NOT EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
     BEGIN
-        PRINT 'El pedido no existe'
-        RETURN
+        PRINT 'El pedido no existe';
+        RETURN;
     END
 
-    SELECT @producto = Producto, @fab = Fab, @cantidad = Cantidad FROM Pedidos WHERE Num_Pedido = @numpedido
+    SELECT @producto = Producto, @fab = Fab, @cantidad = Cantidad FROM Pedidos WHERE Num_Pedido = @numpedido;
 
-    BEGIN TRANSACTION
-    DELETE FROM Pedidos WHERE Num_Pedido = @numpedido
-    UPDATE Productos SET Stock = Stock + @cantidad WHERE Id_fab = @fab AND Id_producto = @producto
-    COMMIT TRANSACTION
+    BEGIN TRANSACTION;
+    DELETE FROM Pedidos WHERE Num_Pedido = @numpedido;
+    UPDATE Productos SET Stock = Stock + @cantidad WHERE Id_fab = @fab AND Id_producto = @producto;
+    COMMIT TRANSACTION;
 
-    PRINT 'Pedido eliminado y stock restaurado'
-END
+    PRINT 'Pedido eliminado y stock restaurado';
+END;
 
---7 Este procedimiento registra un producto.	
+-- 7 Este procedimiento registra un producto.	
 CREATE OR ALTER PROCEDURE spu_producto_insert
     @id_fab CHAR(3),
     @id_producto CHAR(5),
@@ -539,16 +481,16 @@ AS
 BEGIN
     IF EXISTS (SELECT 1 FROM Productos WHERE Id_fab = @id_fab AND Id_producto = @id_producto)
     BEGIN
-        PRINT 'El producto ya existe'
-        RETURN
+        PRINT 'El producto ya existe';
+        RETURN;
     END
 
-    INSERT INTO Productos VALUES (@id_fab, @id_producto, @descripcion, @precio, @stock)
+    INSERT INTO Productos VALUES (@id_fab, @id_producto, @descripcion, @precio, @stock);
 
-    PRINT 'Producto agregado exitosamente'
-END
+    PRINT 'Producto agregado exitosamente';
+END;
 
---8 Este procedimiento cambia el precio de un producto.
+-- 8 Este procedimiento cambia el precio de un producto.
 CREATE OR ALTER PROCEDURE spu_producto_update_precio
     @id_fab CHAR(3),
     @id_producto CHAR(5),
@@ -557,25 +499,22 @@ AS
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Productos WHERE Id_fab = @id_fab AND Id_producto = @id_producto)
     BEGIN
-        PRINT 'El producto no existe'
-        RETURN
+        PRINT 'El producto no existe';
+        RETURN;
     END
 
     UPDATE Productos
     SET Precio = @nuevo_precio
-    WHERE Id_fab = @id_fab AND Id_producto = @id_producto
+    WHERE Id_fab = @id_fab AND Id_producto = @id_producto;
 
-    PRINT 'Precio actualizado'
-END
-
-
----------------------------------------------------------------------------------
+    PRINT 'Precio actualizado';
+END;
 
 /*
--- 1 Realizar una devoluci�n de pedido
+-- 1 Realizar una devolución de pedido
 Validaciones:
  El pedido debe existir
- Se debe verificar si la cantidad a devolver es v�lida
+ Se debe verificar si la cantidad a devolver es válida
  Se debe restaurar el stock
 */
 CREATE OR ALTER PROCEDURE spu_pedido_devolucion
@@ -583,75 +522,76 @@ CREATE OR ALTER PROCEDURE spu_pedido_devolucion
     @cantidad_devuelta INT
 AS
 BEGIN
-    DECLARE @cantidad_actual INT, @producto CHAR(5), @fab CHAR(3)
+    DECLARE @cantidad_actual INT, @producto CHAR(5), @fab CHAR(3);
 
     -- Validar que el pedido exista
     IF NOT EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
     BEGIN
-        PRINT 'El pedido no existe'
-        RETURN
+        PRINT 'El pedido no existe';
+        RETURN;
     END
 
     -- Obtener datos del pedido
     SELECT @producto = Producto, @fab = Fab, @cantidad_actual = Cantidad
-    FROM Pedidos WHERE Num_Pedido = @numpedido
+    FROM Pedidos WHERE Num_Pedido = @numpedido;
 
     -- Validar que la cantidad devuelta no sea mayor a la cantidad original
     IF @cantidad_devuelta > @cantidad_actual OR @cantidad_devuelta <= 0
     BEGIN
-        PRINT 'Cantidad inv�lida para devoluci�n'
-        RETURN
+        PRINT 'Cantidad inválida para devolución';
+        RETURN;
     END
 
-    -- Transacci�n para actualizar el pedido y restaurar el stock
-    BEGIN TRANSACTION
-    UPDATE Pedidos SET Cantidad = Cantidad - @cantidad_devuelta WHERE Num_Pedido = @numpedido
-    UPDATE Productos SET Stock = Stock + @cantidad_devuelta WHERE Id_fab = @fab AND Id_producto = @producto
-    COMMIT TRANSACTION
+    -- Transacción para actualizar el pedido y restaurar el stock
+    BEGIN TRANSACTION;
+    UPDATE Pedidos SET Cantidad = Cantidad - @cantidad_devuelta WHERE Num_Pedido = @numpedido;
+    UPDATE Productos SET Stock = Stock + @cantidad_devuelta WHERE Id_fab = @fab AND Id_producto = @producto;
+    COMMIT TRANSACTION;
 
-    PRINT 'Devoluci�n procesada correctamente'
-END
+    PRINT 'Devolución procesada correctamente';
+END;
+
 /*
---2 Aplicar un descuento a un pedido
+-- 2 Aplicar un descuento a un pedido
 Validaciones:
 El pedido debe existir
-El descuento no puede hacer que el importe sea negativo*/
-
+El descuento no puede hacer que el importe sea negativo
+*/
 CREATE OR ALTER PROCEDURE spu_pedido_descuento
     @numpedido INT,
     @descuento MONEY
 AS
 BEGIN
-    DECLARE @importe_actual MONEY
+    DECLARE @importe_actual MONEY;
 
     -- Validar que el pedido exista
     IF NOT EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
     BEGIN
-        PRINT 'El pedido no existe'
-        RETURN
+        PRINT 'El pedido no existe';
+        RETURN;
     END
 
     -- Obtener importe actual
-    SELECT @importe_actual = Importe FROM Pedidos WHERE Num_Pedido = @numpedido
+    SELECT @importe_actual = Importe FROM Pedidos WHERE Num_Pedido = @numpedido;
 
     -- Validar que el descuento no haga que el importe sea negativo
     IF @descuento >= @importe_actual OR @descuento < 0
     BEGIN
-        PRINT 'Descuento inv�lido'
-        RETURN
+        PRINT 'Descuento inválido';
+        RETURN;
     END
 
     -- Aplicar descuento
-    UPDATE Pedidos SET Importe = Importe - @descuento WHERE Num_Pedido = @numpedido
+    UPDATE Pedidos SET Importe = Importe - @descuento WHERE Num_Pedido = @numpedido;
 
-    PRINT 'Descuento aplicado correctamente'
-END
+    PRINT 'Descuento aplicado correctamente';
+END;
 
 /*
-3--Transferir un pedido a otro representante
+3-- Transferir un pedido a otro representante
 Validaciones:
 El pedido debe existir
- El nuevo representante debe existir
+El nuevo representante debe existir
 */
 CREATE OR ALTER PROCEDURE spu_pedido_transferir_rep
     @numpedido INT,
@@ -661,26 +601,25 @@ BEGIN
     -- Validar que el pedido exista
     IF NOT EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
     BEGIN
-        PRINT 'El pedido no existe'
-        RETURN
+        PRINT 'El pedido no existe';
+        RETURN;
     END
 
     -- Validar que el nuevo representante exista
     IF NOT EXISTS (SELECT 1 FROM Representantes WHERE Num_Empl = @nuevo_rep)
     BEGIN
-        PRINT 'El representante no existe'
-        RETURN
+        PRINT 'El representante no existe';
+        RETURN;
     END
 
     -- Actualizar el representante del pedido
-    UPDATE Pedidos SET Rep = @nuevo_rep WHERE Num_Pedido = @numpedido
+    UPDATE Pedidos SET Rep = @nuevo_rep WHERE Num_Pedido = @numpedido;
 
-    PRINT 'Pedido transferido correctamente'
-END
-
+    PRINT 'Pedido transferido correctamente';
+END;
 
 /*
---4 Cancelar un pedido
+-- 4 Cancelar un pedido
 Validaciones:
  El pedido debe existir
  Se debe restaurar el stock
@@ -689,30 +628,29 @@ CREATE OR ALTER PROCEDURE spu_pedido_cancelar
     @numpedido INT
 AS
 BEGIN
-    DECLARE @cantidad INT, @producto CHAR(5), @fab CHAR(3)
+    DECLARE @cantidad INT, @producto CHAR(5), @fab CHAR(3);
 
     -- Validar que el pedido exista
     IF NOT EXISTS (SELECT 1 FROM Pedidos WHERE Num_Pedido = @numpedido)
     BEGIN
-        PRINT 'El pedido no existe'
-        RETURN
+        PRINT 'El pedido no existe';
+        RETURN;
     END
 
     -- Obtener datos del pedido
-    SELECT @producto = Producto, @fab = Fab, @cantidad = Cantidad FROM Pedidos WHERE Num_Pedido = @numpedido
+    SELECT @producto = Producto, @fab = Fab, @cantidad = Cantidad FROM Pedidos WHERE Num_Pedido = @numpedido;
 
-    -- Transacci�n para cancelar el pedido y restaurar stock
-    BEGIN TRANSACTION
-    DELETE FROM Pedidos WHERE Num_Pedido = @numpedido
-    UPDATE Productos SET Stock = Stock + @cantidad WHERE Id_fab = @fab AND Id_producto = @producto
-    COMMIT TRANSACTION
+    -- Transacción para cancelar el pedido y restaurar stock
+    BEGIN TRANSACTION;
+    DELETE FROM Pedidos WHERE Num_Pedido = @numpedido;
+    UPDATE Productos SET Stock = Stock + @cantidad WHERE Id_fab = @fab AND Id_producto = @producto;
+    COMMIT TRANSACTION;
 
-    PRINT 'Pedido cancelado correctamente'
-END
-
+    PRINT 'Pedido cancelado correctamente';
+END;
 
 /*
---5 Verificar si un representante ha cumplido su cuota
+-- 5 Verificar si un representante ha cumplido su cuota
 Validaciones:
 El representante debe existir
  Se deben sumar los importes de sus pedidos
@@ -721,41 +659,38 @@ CREATE OR ALTER PROCEDURE spu_rep_verificar_cuota
     @rep INT
 AS
 BEGIN
-    DECLARE @cuota MONEY, @ventas MONEY
+    DECLARE @cuota MONEY, @ventas MONEY;
 
     -- Validar que el representante exista
     IF NOT EXISTS (SELECT 1 FROM Representantes WHERE Num_Empl = @rep)
     BEGIN
-        PRINT 'El representante no existe'
-        RETURN
+        PRINT 'El representante no existe';
+        RETURN;
     END
 
     -- Obtener cuota y ventas
-    SELECT @cuota = Cuota FROM Representantes WHERE Num_Empl = @rep
-    SELECT @ventas = ISNULL(SUM(Importe), 0) FROM Pedidos WHERE Rep = @rep
+    SELECT @cuota = Cuota FROM Representantes WHERE Num_Empl = @rep;
+    SELECT @ventas = ISNULL(SUM(Importe), 0) FROM Pedidos WHERE Rep = @rep;
 
-    -- Validar si cumpli� la cuota
+    -- Validar si cumplió la cuota
     IF @ventas >= @cuota
-        PRINT 'El representante ha cumplido su cuota'
+        PRINT 'El representante ha cumplido su cuota';
     ELSE
-        PRINT 'El representante no ha cumplido su cuota'
-END
-
+        PRINT 'El representante no ha cumplido su cuota';
+END;
 
 /*
---6 Consultar los productos con menos stock
+-- 6 Consultar los productos con menos stock
 */
-
 CREATE OR ALTER PROCEDURE spu_productos_bajo_stock
     @limite INT
 AS
 BEGIN
-    SELECT * FROM Productos WHERE Stock < @limite
-END
-
+    SELECT * FROM Productos WHERE Stock < @limite;
+END;
 
 /*
---7  Cambiar el jefe de una oficina
+-- 7 Cambiar el jefe de una oficina
 Validaciones:
  La oficina debe existir
  El nuevo jefe debe existir
@@ -768,52 +703,46 @@ BEGIN
     -- Validar que la oficina exista
     IF NOT EXISTS (SELECT 1 FROM Oficinas WHERE Oficina = @oficina)
     BEGIN
-        PRINT 'La oficina no existe'
-        RETURN
+        PRINT 'La oficina no existe';
+        RETURN;
     END
 
     -- Validar que el nuevo jefe exista
     IF NOT EXISTS (SELECT 1 FROM Representantes WHERE Num_Empl = @nuevo_jefe)
     BEGIN
-        PRINT 'El representante no existe'
-        RETURN
+        PRINT 'El representante no existe';
+        RETURN;
     END
 
     -- Actualizar jefe
-    UPDATE Oficinas SET Jef = @nuevo_jefe WHERE Oficina = @oficina
+    UPDATE Oficinas SET Jef = @nuevo_jefe WHERE Oficina = @oficina;
 
-    PRINT 'Jefe actualizado correctamente'
-END
-
+    PRINT 'Jefe actualizado correctamente';
+END;
 
 /*
---8 Generar reporte de ventas de un representante
+-- 8 Generar reporte de ventas de un representante
 */
-
- CREATE OR ALTER PROCEDURE spu_reporte_ventas_rep
+CREATE OR ALTER PROCEDURE spu_reporte_ventas_rep
     @rep INT
 AS
 BEGIN
     -- Validar que el representante exista
     IF NOT EXISTS (SELECT 1 FROM Representantes WHERE Num_Empl = @rep)
     BEGIN
-        PRINT 'El representante no existe'
-        RETURN
+        PRINT 'El representante no existe';
+        RETURN;
     END
 
     -- Generar reporte de ventas
     SELECT Num_Pedido, Fecha_Pedido, Cliente, Producto, Cantidad, Importe
     FROM Pedidos WHERE Rep = @rep
-    ORDER BY Fecha_Pedido DESC
-END
-
+    ORDER BY Fecha_Pedido DESC;
+END;
 
 /* 
---9
-*/
-*
-Generar un informe de desempe�o de representantes
-Crea un Store Procedure que genere un informe detallado sobre el desempe�o de los representantes de ventas.
+-- 9 Generar un informe de desempeño de representantes
+Crea un Store Procedure que genere un informe detallado sobre el desempeño de los representantes de ventas.
 El procedimiento debe calcular varios indicadores clave y devolver los resultados en una consulta.
 Requerimientos del procedimiento
  Verificar que el representante exista.
@@ -822,14 +751,16 @@ Requerimientos del procedimiento
  Calcular el monto total de ventas generadas por el representante.
  Calcular el porcentaje de cumplimiento de cuota:
 
-Si el representante ya ha superado su cuota, debe indicar cu�nto ha sobrepasado.
+Si el representante ya ha superado su cuota, debe indicar cuánto ha sobrepasado.
 Si no ha cumplido la cuota, debe mostrar el porcentaje restante.
  Determinar si el representante ha cumplido su cuota (SI o NO).
  Si el representante no ha realizado ventas, mostrar "Sin Ventas" en el informe.
  Manejo de errores con TRY-CATCH.
 */
-select * from Representantes
-go
+
+SELECT * FROM Representantes;
+GO
+
 CREATE OR ALTER PROCEDURE spu_reporte_desempe�o
 @numempleado INT
 AS
@@ -844,7 +775,7 @@ BEGIN
         RETURN;
     END
 
-    -- Declarar variables para c�lculos
+    -- Declarar variables para cálculos
     DECLARE @totalPedidos INT, 
             @totalProductosVendidos INT, 
             @totalVentas MONEY, 
@@ -853,24 +784,16 @@ BEGIN
             @estadoCumplimiento VARCHAR(10);
 
     -- Obtener la cuota del representante
-    SELECT @cuota = Cuota 
-    FROM Representantes 
-    WHERE Num_Empl = @numempleado;
+    SELECT @cuota = Cuota FROM Representantes WHERE Num_Empl = @numempleado;
 	
     -- Calcular el total de pedidos gestionados
-    SELECT @totalPedidos = COUNT(*)
-    FROM Pedidos
-    WHERE Rep = @numempleado;
+    SELECT @totalPedidos = COUNT(*) FROM Pedidos WHERE Rep = @numempleado;
 
     -- Calcular la cantidad total de productos vendidos
-    SELECT @totalProductosVendidos = SUM(Cantidad)
-    FROM Pedidos
-    WHERE Rep = @numempleado;
+    SELECT @totalProductosVendidos = SUM(Cantidad) FROM Pedidos WHERE Rep = @numempleado;
 
     -- Calcular el monto total de ventas generadas
-    SELECT @totalVentas = SUM(Importe)
-    FROM Pedidos
-    WHERE Rep = @numempleado;
+    SELECT @totalVentas = SUM(Importe) FROM Pedidos WHERE Rep = @numempleado;
 
     -- Si el representante no ha realizado ventas, establecer valores predeterminados
     IF @totalPedidos IS NULL
@@ -884,7 +807,7 @@ BEGIN
     IF @cuota > 0
         SET @porcentajeCumplimiento = (@totalVentas / @cuota) * 100;
     ELSE
-        SET @porcentajeCumplimiento = 0; -- Evitar divisi�n por cero
+        SET @porcentajeCumplimiento = 0; -- Evitar división por cero
 
     -- Determinar si ha cumplido su cuota
     IF @totalVentas >= @cuota
@@ -892,39 +815,37 @@ BEGIN
     ELSE
         SET @estadoCumplimiento = 'NO';
 
-	begin try
-    -- Devolver los resultados
-    SELECT 
-        @numempleado AS Num_Empleado,
-        @totalPedidos AS Total_Pedidos,
-        @totalProductosVendidos AS Total_Productos_Vendidos,
-        @totalVentas AS Total_Ventas,
-        @cuota AS Cuota_Asignada,
-        @porcentajeCumplimiento AS Porcentaje_Cumplimiento,
-        @estadoCumplimiento AS Cumplio_Cuota,
-        CASE 
-            WHEN @totalVentas = 0 THEN 'Sin Ventas'
-            ELSE 'Ventas Realizadas'
-        END AS Estado_Ventas;
-		commit transaction
-	END TRY
+    BEGIN TRY
+        -- Devolver los resultados
+        SELECT 
+            @numempleado AS Num_Empleado,
+            @totalPedidos AS Total_Pedidos,
+            @totalProductosVendidos AS Total_Productos_Vendidos,
+            @totalVentas AS Total_Ventas,
+            @cuota AS Cuota_Asignada,
+            @porcentajeCumplimiento AS Porcentaje_Cumplimiento,
+            @estadoCumplimiento AS Cumplio_Cuota,
+            CASE 
+                WHEN @totalVentas = 0 THEN 'Sin Ventas'
+                ELSE 'Ventas Realizadas'
+            END AS Estado_Ventas;
+        COMMIT TRANSACTION;
+    END TRY
 
-	BEGIN CATCH
-		ROLLBACK TRANSACTION;
-		RAISERROR('Error al generar el reporte de desempe�o', 16, 1);
-	END CATCH
-end
-go
-select * from Representantes
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        RAISERROR('Error al generar el reporte de desempeño', 16, 1);
+    END CATCH;
+END;
+GO
+
+SELECT * FROM Representantes;
 SELECT * FROM Representantes WHERE Cuota IS NULL OR Ventas IS NULL;
 
---	Prueba: Representante con ventas
+-- Prueba: Representante con ventas
 EXEC spu_reporte_desempe�o @numempleado = 104;
-rollback transaction
+ROLLBACK TRANSACTION;
 
-select * from Pedidos
-select sum(Importe) from Pedidos
-where Rep = 104
--- 58633,00
-
+SELECT * FROM Pedidos;
+SELECT SUM(Importe) FROM Pedidos WHERE Rep = 104; -- 58633,00
 ```

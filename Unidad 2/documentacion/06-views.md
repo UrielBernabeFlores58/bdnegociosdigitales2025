@@ -1,129 +1,114 @@
 # Vistas
 
 ## Ejercicio 6 de la Unidad 2
-
-``` sql
+```sql
 -- Views 
 
---sintaxis 
-/*create view nombreVista 
+-- sintaxis 
+/* create view nombreVista 
 AS
 select columnas
 from tabla 
 where condicion
 */
 
-use northwind;
-go
+USE northwind;
+GO
 
-create or alter view VistaCategoriasTodas
+CREATE OR ALTER VIEW VistaCategoriasTodas
 AS
-select CategoryID, CategoryName, [Description], picture 
-from Categories
-where CategoryName = 'Beverages'
+SELECT CategoryID, CategoryName, [Description], picture 
+FROM Categories
+WHERE CategoryName = 'Beverages';
 
-Go
+GO
 
-drop view VistaCategoriasTodas
-go
+DROP VIEW VistaCategoriasTodas;
+GO
 
-select * from VistaCategoriasTodas
-where CategoryName = 'Beverages'
+SELECT * FROM VistaCategoriasTodas
+WHERE CategoryName = 'Beverages';
 
 -- Crear una vista que permita visualizar solamente clientes de mexico y brazil
-go
+GO
 
-create or alter view vistaClientesLatinos
-as
-select * from Customers
-where country in('MExico','Brazil')
+CREATE OR ALTER VIEW vistaClientesLatinos
+AS
+SELECT * FROM Customers
+WHERE country IN('MExico','Brazil');
 
+SELECT CompanyName AS [Cliente], 
+       City AS [Ciudad], 
+       country AS [Pais]
+FROM vistaClientesLatinos
+WHERE city = 'Sao Paulo'
+ORDER BY 2 DESC;
 
-select CompanyName as [Cliente], 
-City as [Ciudad], country as [Pais]
-from vistaClientesLatinos
-where city = 'Sao Paulo'
-order by 2 desc
-
-
-select * from 
-Orders as o 
-inner join vistaClientesLatinos as vcl
-on vcl.CustomerID = o.CustomerID
+SELECT * FROM 
+Orders AS o 
+INNER JOIN vistaClientesLatinos AS vcl
+ON vcl.CustomerID = o.CustomerID;
 
 -- Crear una vista que contenga los datos de todas las ordenes
--- los productos, catgorias de productos,empleados y clientes,  
+-- los productos, categorias de productos, empleados y clientes,  
 -- en la orden 
 -- calcular el importe 
 
+CREATE OR ALTER VIEW [dbo].[vistaordenescompra]
+AS
+SELECT o.OrderID AS [numero Orden], 
+       o.OrderDate AS [Fecha de Orden], 
+       o.RequiredDate AS [Fecha de Requisici�n],
+       CONCAT(e.FirstName, ' ', e.LastName) AS [Nombre Empleado],
+       cu.CompanyName AS [Nombre del Cliente], 
+       p.ProductName AS [Nombre Producto], 
+       c.CategoryName AS [Nombre de la Categoria], 
+       od.UnitPrice AS [Precio de Venta],
+       od.Quantity AS [Cantidad Vendida], 
+       (od.Quantity * od.UnitPrice) AS [importe]
+FROM  
+Categories AS c
+INNER JOIN Products AS p ON c.CategoryID = p.CategoryID
+INNER JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+INNER JOIN Orders AS o ON od.OrderID = o.OrderID
+INNER JOIN Customers AS cu ON cu.CustomerID = o.CustomerID
+INNER JOIN Employees AS e ON e.EmployeeID = o.EmployeeID;
 
-create or alter view [dbo].[vistaordenescompra]
-as
-select o.OrderID as [numero Orden], 
-o.OrderDate as [Fecha de Orden], 
-o.RequiredDate as [Fecha de Requisici�n],
-concat(e.FirstName, ' ', e.LastName) as [Nombre Empleado],
-cu.CompanyName as [Nombre del Cliente], 
-p.ProductName as [Nombre Producto], 
-c.CategoryName as [Nombre de la Categoria], 
-od.UnitPrice as [Precio de Venta],
-od.Quantity as [Cantidad Vendida], 
-(od.Quantity * od.UnitPrice) as [importe]
-from  
-Categories as c
-inner join Products as p 
-on c.CategoryID = p.CategoryID
-inner join [Order Details] as od
-on od.ProductID = p.ProductID
-inner join orders as o
-on od.OrderID = o.OrderID
-inner join Customers as cu
-on cu.CustomerID = o.CustomerID
-inner join Employees as e
-on e.EmployeeID = o.EmployeeID
+SELECT COUNT(DISTINCT [numero Orden]) AS [Numero de Ordenes]
+FROM vistaordenescompra;
 
-select count(distinct [numero Orden]) as [Numero de Ordenes]
-from vistaordenescompra
-
-select sum([Cantidad Vendida] * [Precio de Venta]) as [importe Total]
-from vistaordenescompra 
-Go
-
-select sum(importe) as [importe Total]
-from vistaordenescompra 
-where year([Fecha de Orden]) between '1995' and '1996'  
-Go
-
-create or alter view vista_ordenes_1995_1996
-as
-select [Nombre del Cliente] as 'Nombre Cliente', 
-sum(importe) as [importe Total]
-from vistaordenescompra 
-where year([Fecha de Orden]) 
-between '1995' and '1996'  
-group by [Nombre del Cliente]
-having count(*)>2
-
-
-create schema rh
-
-create table rh.tablarh (
-  id int primary key, 
-  nombre nvarchar(50)
-)
-
-
--- vista horizontal
-create or alter view rh.viewcategoriasproductos
-as
-select c.CategoryID, CategoryName, p.ProductID, p.ProductName 
-from 
-Categories as c
-inner join Products as p
-on c.CategoryID = p.CategoryID;
+SELECT SUM([Cantidad Vendida] * [Precio de Venta]) AS [importe Total]
+FROM vistaordenescompra; 
 GO
 
-select * from rh.viewcategoriasproductos
+SELECT SUM(importe) AS [importe Total]
+FROM vistaordenescompra 
+WHERE YEAR([Fecha de Orden]) BETWEEN '1995' AND '1996';  
+GO
 
+CREATE OR ALTER VIEW vista_ordenes_1995_1996
+AS
+SELECT [Nombre del Cliente] AS 'Nombre Cliente', 
+       SUM(importe) AS [importe Total]
+FROM vistaordenescompra 
+WHERE YEAR([Fecha de Orden]) BETWEEN '1995' AND '1996'  
+GROUP BY [Nombre del Cliente]
+HAVING COUNT(*) > 2;
 
-```
+CREATE SCHEMA rh;
+
+CREATE TABLE rh.tablarh (
+  id INT PRIMARY KEY, 
+  nombre NVARCHAR(50)
+);
+
+-- vista horizontal
+CREATE OR ALTER VIEW rh.viewcategoriasproductos
+AS
+SELECT c.CategoryID, CategoryName, p.ProductID, p.ProductName 
+FROM 
+Categories AS c
+INNER JOIN Products AS p ON c.CategoryID = p.CategoryID;
+GO
+
+SELECT * FROM rh.viewcategoriasproductos;

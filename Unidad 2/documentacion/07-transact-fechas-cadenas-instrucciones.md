@@ -1,101 +1,88 @@
-# Transact Fechas,Cadenas,Instrucciones
+# Transact Fechas, Cadenas, Instrucciones
 
 ## ejercicio 7 de la unidad 2
 
-``` sql
+```sql
 -- Funciones de Cadena
 
-/* las funciones de coadena permite manipular tiposd de datos
-como varchar, nvarchar,char,nchar 
+/* Las funciones de cadena permiten manipular tipos de datos
+como varchar, nvarchar, char, nchar 
 
-funcion Len -> la funcion len devuelve la longitud de una cadena
+Función Len -> La función len devuelve la longitud de una cadena
 
-DECLARACION DE VARIABLE 
+Declaración de variable 
 
 TEXTO VARCHAR 50
-
 */
-DECLARE @Texto varchar(50) = 'Hola,Mundo!'
+DECLARE @Texto varchar(50) = 'Hola,Mundo!';
 
 DECLARE @Numero int;
 SET @Numero = 10;
 
-
--- obtener el tamanio de ka cadena almacenada en la variable texto
-go 
+-- Obtener el tamaño de la cadena almacenada en la variable texto
+GO 
 DECLARE @Texto varchar(50) = 'Hola,Mundo!';
 
-select LEN (@Texto) as [Longitud]
+SELECT LEN(@Texto) AS [Longitud];
 
-go
+GO
 
-
-
-select CompanyName, len(CompanyName) from Customers
+SELECT CompanyName, LEN(CompanyName) FROM Customers;
 
 /*
--- Funcion LEF
-extrae un numerop especifico de caracteres desde el inicio de la 
-cadena */
-
+-- Función LEFT
+Extrae un número específico de caracteres desde el inicio de la 
+cadena 
+*/
 DECLARE @Texto varchar(50) = 'Hola,Mundo!';
-select LEFT(@Texto,4) as Inicio
- go
- /* rigth
- extare un determinado numero de caracteres del final de la cadena */
+SELECT LEFT(@Texto, 4) AS Inicio;
+GO
 
- 
+/* RIGHT
+Extrae un determinado número de caracteres del final de la cadena */
 DECLARE @Texto varchar(50) = 'Hola,Mundo!';
-select RIGHT(@Texto,6) as Final
-go 
+SELECT RIGHT(@Texto, 6) AS Final;
+GO 
 
-select CompanyName, len(CompanyName) as 'Numero de caracteres',
-left(CompanyName, 4) as Inicio,
-right(CompanyName, 6) as Final,
-substring(CompanyName,7,4) as 'Subcadena'
-from Customers
+SELECT CompanyName, 
+       LEN(CompanyName) AS 'Numero de caracteres',
+       LEFT(CompanyName, 4) AS Inicio,
+       RIGHT(CompanyName, 6) AS Final,
+       SUBSTRING(CompanyName, 7, 4) AS 'Subcadena'
+FROM Customers;
 
-
-
--- substring -> extrae una parte de la cadena , donde el primer parametro es de donde inicia
--- y el segundo que vaa rrecorrer, (5, recorrera 5 caracteres contando el primer parametro)
+/* 
+SUBSTRING -> Extrae una parte de la cadena, donde el primer parámetro es de donde inicia
+y el segundo que va a recorrer, (5, recorrerá 5 caracteres contando el primer parámetro)
+*/
 DECLARE @Texto2 varchar(50) = 'Hola, Mundo!';
-select SUBSTRING(@Texto2,7,5)
+SELECT SUBSTRING(@Texto2, 7, 5);
 
-
--- replace -> remplaza una subcadena por otra 
+-- REPLACE -> Reemplaza una subcadena por otra 
 DECLARE @Texto3 varchar(50) = 'Hola, Mundo!';
-select REPLACE(@Texto3,'Mundo!','Amigo')
-go 
+SELECT REPLACE(@Texto3, 'Mundo!', 'Amigo');
+GO 
 
--- charindex
+-- CHARINDEX
 DECLARE @Texto3 varchar(50) = 'Hola, Mundo!';
-select CHARINDEX ('Mundo',@Texto3)
-go
+SELECT CHARINDEX('Mundo', @Texto3);
+GO
 
---upper convierte una cadena en mayusculas
+-- UPPER convierte una cadena en mayúsculas
 DECLARE @Texto3 varchar(50) = 'Hola, Mundo!';
-select concat (left(@Texto3, 6),
+SELECT CONCAT(LEFT(@Texto3, 6),
+              UPPER(SUBSTRING(@Texto3, 7, 5)),
+              RIGHT(@Texto3, 1)) AS Mayuscula;
 
-upper (substring ( @Texto3, 7, 5)),
-
-RIGHT(@Texto3,1)) as Mayuscula
-
-
-select upper (CompanyName) from Customers
-
+SELECT UPPER(CompanyName) FROM Customers;
 
 -- UPDATE
-Update Customers 
-set /*campo que voy a cambiar */ CompanyName  = UPPER (CompanyName)
-where Country in ('Mexico', 'Germany') 
+UPDATE Customers 
+SET /* Campo que voy a cambiar */ 
+    CompanyName = UPPER(CompanyName)
+WHERE Country IN ('Mexico', 'Germany'); 
 
--- trim quita espacion en blanco de una cadena 
+-- TRIM quita espacio en blanco de una cadena 
 DECLARE @Texto4 varchar(50) = '  Hola, Mundo!';
-SELECT TRIM( @Texto4) AS Result;
-go
-
-
-
-
-```
+SELECT TRIM(@Texto4) AS Result;
+GO

@@ -1,164 +1,115 @@
 # Consultas Simples
+
 ## Ejercicio 1 de la Unidad 2
 
-``` sql
+```sql
 -- LENGUAJE SQL LMD
 -- CONSULTAS SIMPLES 
 
-use Northwind;
+USE Northwind;
 
-/* consultas
-mostrarall clientes de la empresa con todas las columnas de datos de la empresa(SELECT, UPDATE,DELETE, CRUD, INSERT)
-mostrar todos los clientes, proveedores,categorias,productos,ordenes, detalle de la orden, empleados
+/* Consultas:
+   - Mostrar todos los clientes de la empresa con todas las columnas de datos.
+   - Mostrar todos los clientes, proveedores, categorías, productos, órdenes, detalle de la orden y empleados.
 */
 
+SELECT * FROM Customers;
+SELECT * FROM Employees;
+SELECT * FROM Orders;
+SELECT * FROM Suppliers;
+SELECT * FROM Products;
+SELECT * FROM Shippers;
+SELECT * FROM Categories;
+SELECT * FROM [Order Details];
 
-select * from Customers;
-select * from Employees;
-select * from Orders;
-select * from Suppliers;
-select * from Products;
-select * from Shippers;
-select * from Categories;
-select * from [Order Details]
+-- Proyección: Mostrar ID, nombre, precio unitario y unidades en stock de los productos.
+SELECT ProductID, ProductName, UnitPrice, UnitsInStock FROM Products;
 
--- Proyeccion
-select ProductID, ProductName,UnitPrice, UnitsInStock  
-from Products;
+-- Seleccionar y mostrar número de empleado, primer nombre, cargo y ciudad.
+SELECT EmployeeID, Country, City, FirstName, Title FROM Employees;
 
--- seleccionar, mostrar el numero de empleado,primer nombre, cargo, ciudad
+-- Uso de alias en columnas
+SELECT EmployeeID AS 'Numero Empleado', 
+       FirstName AS 'Primer Nombre', 
+       Title AS 'Cargo', 
+       City AS 'Ciudad', 
+       Country AS 'País' 
+FROM Employees;
 
-select EmployeeID, Country, City, FirstName, Title  from Employees
+/* Campos calculados: Seleccionar el importe de cada producto vendido en una orden */
+SELECT *, (UnitPrice * Quantity) AS Importe FROM [Order Details];
 
+-- Eliminar filas duplicadas usando DISTINCT
+SELECT DISTINCT Country FROM Customers ORDER BY Country;
 
--- alias columna, en base  ala consukta ant, visualizar el empleado id como numero de empleado, first name como primer nombre
--- title como cargo, city como ciudad, country como pais
+/* Seleccionar fechas en orden (Año, Mes, Día), cliente y empleado que realizó la orden */
+SELECT OrderDate, 
+       YEAR(OrderDate) AS Año, 
+       MONTH(OrderDate) AS Mes, 
+       DAY(OrderDate) AS Día, 
+       CustomerID, 
+       EmployeeID 
+FROM Orders;
 
+/* Clausula WHERE con operadores relacionales (<, >, =, <=, >=, !=, <>) */
 
-select EmployeeID as 'Numero Empleado' /*[Numero Empleado]*/,FirstName as primernombre, 
-Title as cargo, City as ciudad, Country as pais from Employees;
+-- Seleccionar el cliente 'BOLID'
+SELECT CustomerID, CompanyName, City, Country FROM Customers WHERE CustomerID = 'BOLID';
 
+-- Seleccionar clientes de Alemania
+SELECT CustomerID AS Identificador, 
+       CompanyName AS NombreEmpresa, 
+       ContactName AS Contacto, 
+       Country AS País 
+FROM Customers 
+WHERE Country = 'Germany';
 
-/* campos calculados, 
-seleccionar el importe de cada uno de los productos vendidos, en una orden*/
+-- Seleccionar clientes que NO sean de Alemania (dos formas)
+SELECT CustomerID, CompanyName, ContactName, Country FROM Customers WHERE Country != 'Germany';
+SELECT CustomerID, CompanyName, ContactName, Country FROM Customers WHERE Country <> 'Germany';
 
+/* Seleccionar productos donde el precio sea mayor a 100 */
+SELECT ProductName, CategoryID, UnitsInStock, UnitPrice, (UnitPrice * UnitsInStock) AS Importe 
+FROM Products 
+WHERE UnitPrice > 100;
 
-select *,(UnitPrice*Quantity) as importe from [Order Details];
+/* Seleccionar órdenes de compra del año 1996 */
+SELECT OrderDate AS FechaOrden, 
+       RequiredDate AS FechaEntrega, 
+       ShippedDate AS FechaEnvio, 
+       ShipName AS Cliente 
+FROM Orders 
+WHERE YEAR(OrderDate) = 1996;
 
+/* Mostrar órdenes donde la cantidad comprada sea mayor a 40 */
+SELECT * FROM [Order Details] WHERE Quantity > 40;
 
--- filas duplicadas,	Distinct
+/* Mostrar empleados con datos relevantes */
+SELECT EmployeeID AS Numero, 
+       FirstName AS Nombre, 
+       LastName AS Apellido, 
+       BirthDate AS Nacimiento, 
+       City AS Ciudad, 
+       HireDate AS Contratacion 
+FROM Employees 
+WHERE YEAR(HireDate) > 1993;
 
- select * from Customers;
- 
- select distinct Country from Customers
- order by Country;
+-- Formas de concatenar nombres
 
+-- Forma 1: Concatenación simple
+SELECT EmployeeID AS Numero, (FirstName + ' ' + LastName) AS NombreCompleto, 
+       BirthDate AS Nacimiento, City AS Ciudad, HireDate AS Contratacion 
+FROM Employees 
+WHERE YEAR(HireDate) > 1993;
 
-/* seleccionar las fechas en orden, a�o, mes , dia, el cliente que las ordeno
-y el empleado que la realizo*/
+-- Forma 2: Uso de CONCAT
+SELECT EmployeeID AS Numero, CONCAT(FirstName, ' ', LastName) AS [Nombre Completo], 
+       BirthDate AS Nacimiento, City AS Ciudad, HireDate AS Contratacion 
+FROM Employees 
+WHERE YEAR(HireDate) > 1993;
 
-select OrderDate,year(OrderDate) as A�o, month(OrderDate) as Mes, DAY(OrderDate) as Dia,CustomerID, EmployeeID from Orders;
+-- Mostrar empleados que no son dirigidos por el jefe número 2
+SELECT FirstName AS Nombre FROM Employees WHERE ReportsTo <> 2;
 
-/* clausula where 
-operadores relacionales (<,>,=,<=,>=, != o <>)
-
-
-seleccionar el cliente BOLID
-id,name, country
-*/
-
-select CustomerID,CompanyName, City, Country from Customers
-where CustomerID = 'BOLID';
-
-
-/* SELECCIONAR CLIENTES, MOSTRANDO IDENTIFICADOR, NOMBRE DE LA EMPRESA, CONTACTO, CUIDAD, Y PAIS DE ALEMANIA */
-
-select * from Customers;
-
-
-select CustomerID as Identificador ,CompanyName as NombreEmpresa,
-ContactName as Contacto , Country as Ciudad from Customers
-where Country != 'Germany';
-
-
-/* 
------------------------------------------------------
-para que no sean de un pais (operador)
-select CustomerID as Identificador ,CompanyName as NombreEmpresa,
-ContactName as Contacto , Country as Ciudad from Customers
-where Country != 'Germany';
------------------------------------------------------------------
-con (<>)
-select CustomerID as Identificador ,CompanyName as NombreEmpresa,
-ContactName as Contacto , Country as Ciudad from Customers
-where Country <> 'Germany';
----------------------------------------------------------------------
-
-seleccionar todos los productos mostrando su nombre de producto, categoria a la que pertenece
-existencia, precio, donde el precio sea mayor a 100 
-*/
-
-select * from Products;
-
-
-select ProductName, CategoryID, UnitsInStock, UnitPrice, (UnitPrice * UnitsInStock) as Import from Products
-where UnitPrice > 100
-;
-
-/* seleccionar las ordenes de compra, mostrando la fecha de orden, la de requerimiento, fecha de envio, el cliente, 
-de 1996*/
-
-
-select OrderDate as FechaOrden, 
-RequiredDate as FechaEntrega,
-ShippedDate as FechaEnvio, 
-ShipName as Cliente from Orders
-where OrderDate = 1996
-;
-
-
-/* mostar todas las ordenes de compra donde la cantidad de productos comprados
-sea mayor a 5 */
-
-
-select Quantity from [Order Details]
-
-where Quantity > 40;
-
-select* from Employees;
-
-select EmployeeID as Numero , FirstName as Nombre, LastName as Apellido,
-BirthDate as Nacimiento, City as Ciudad,
-HireDate as Contratacion
-from Employees
-where year(HireDate) > 1993;
-
------------------------------- forma 2 forma de concatenar 2 campos en este caso nombre completo
-
-select EmployeeID as Numero , (FirstName+''+  LastName) as NombreCompleto,
-BirthDate as Nacimiento, City as Ciudad,
-HireDate as Contratacion
-from Employees
-where year(HireDate) > 1993;
-
--------------------------------------- forma 3 concat 
-
-select EmployeeID as Numero , concat (FirstName, ' ' ,LastName) as [Nombre Completo],
-BirthDate as Nacimiento, City as Ciudad,
-HireDate as Contratacion
-from Employees
-where year(HireDate) > 1993;
-
-
-------------------------------------------- mostrar los empleados que no son dirigidos por el
-/* empleado por el jefe 2 */ 
-
-select FirstName as Nombre from Employees
-where ReportsTo <> 2;
-/*
-seleccionar empleados que no tengan jefe */
-
-select * from Employees
-where ReportsTo IS NULL;
-
-```
+-- Seleccionar empleados que no tienen jefe
+SELECT * FROM Employees WHERE ReportsTo IS NULL;

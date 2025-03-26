@@ -2,182 +2,174 @@
 
 ## Ejercicio 4 de la Unidad 2
 
-
-``` sql
+```sql
 -- EJEMPLO DE LEFT JOIN APLICADO
 
-select * from products_new
+SELECT * FROM products_new;
 
-/* carga full
-*/
+/* carga full */
 
-		insert into products_new
-		select
-			p.ProductID, p.ProductName,
-			cu.CompanyName,  c.CategoryName, od.UnitPrice, p.Discontinued, GETDATE() as 'insert_date'
-		from Products as p
-		join Categories as c
-		on p.CategoryID = c.CategoryID
-		join [Order Details] as od
-		on od.ProductID = p.ProductID
-		join Orders as o
-		on o.OrderID = od.OrderID
-		join Customers as cu
-		on cu.CustomerID = o.CustomerID
+INSERT INTO products_new
+SELECT
+    p.ProductID, 
+    p.ProductName,
+    cu.CompanyName,  
+    c.CategoryName, 
+    od.UnitPrice, 
+    p.Discontinued, 
+    GETDATE() AS 'insert_date'
+FROM Products AS p
+JOIN Categories AS c ON p.CategoryID = c.CategoryID
+JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+JOIN Orders AS o ON o.OrderID = od.OrderID
+JOIN Customers AS cu ON cu.CustomerID = o.CustomerID;
 
-	
 -- crear una tabla a partir de una consulta 
 
-select
-			p.ProductID, p.ProductName,
-			cu.CompanyName,  c.CategoryName, od.UnitPrice, p.Discontinued, GETDATE() as 'inserted_date'
-			into  products_new
-		from Products as p
-		join Categories as c
-		on p.CategoryID = c.CategoryID
-		join [Order Details] as od
-		on od.ProductID = p.ProductID
-		join Orders as o
-		on o.OrderID = od.OrderID
-		join Customers as cu
-		on cu.CustomerID = o.CustomerID
-		-- sin registro
+SELECT
+    p.ProductID, 
+    p.ProductName,
+    cu.CompanyName,  
+    c.CategoryName, 
+    od.UnitPrice, 
+    p.Discontinued, 
+    GETDATE() AS 'inserted_date'
+INTO products_new
+FROM Products AS p
+JOIN Categories AS c ON p.CategoryID = c.CategoryID
+JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+JOIN Orders AS o ON o.OrderID = od.OrderID
+JOIN Customers AS cu ON cu.CustomerID = o.CustomerID;
 
-		
-select
-			top 0 p.ProductID, p.ProductName,
-			cu.CompanyName,  c.CategoryName, od.UnitPrice, p.Discontinued, GETDATE() as 'inserted_date'
-			into  products_new
-		from Products as p
-		join Categories as c
-		on p.CategoryID = c.CategoryID
-		join [Order Details] as od
-		on od.ProductID = p.ProductID
-		join Orders as o
-		on o.OrderID = od.OrderID
-		join Customers as cu
-		on cu.CustomerID = o.CustomerID
+-- sin registro
 
-		-- cambio de nombre de columnas
-				
-select
-			top 0 0 as [productbk], p.ProductID , p.ProductName as 'Producto',
-			cu.CompanyName as 'Customer',  c.CategoryName as 'Category', od.UnitPrice, p.Discontinued, GETDATE() as 'inserted_date'
-			into  products_new
-		from Products as p
-		join Categories as c
-		on p.CategoryID = c.CategoryID
-		join [Order Details] as od
-		on od.ProductID = p.ProductID
-		join Orders as o
-		on o.OrderID = od.OrderID
-		join Customers as cu
-		on cu.CustomerID = o.CustomerID
+SELECT
+    TOP 0 
+    p.ProductID, 
+    p.ProductName,
+    cu.CompanyName,  
+    c.CategoryName, 
+    od.UnitPrice, 
+    p.Discontinued, 
+    GETDATE() AS 'inserted_date'
+INTO products_new
+FROM Products AS p
+JOIN Categories AS c ON p.CategoryID = c.CategoryID
+JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+JOIN Orders AS o ON o.OrderID = od.OrderID
+JOIN Customers AS cu ON cu.CustomerID = o.CustomerID;
 
+-- cambio de nombre de columnas
 
-			   	
-		alter table products_new
-		add constraint pk_products_new
-		primary key (productbk) 
---- clave primaria despues
-select -- Carga Full
-			top 0  p.ProductID , p.ProductName as 'Producto',
-			cu.CompanyName as 'Customer',  c.CategoryName as 'Category', od.UnitPrice, p.Discontinued, GETDATE() as 'inserted_date'
-			into  products_new
-		from Products as p
-		join Categories as c
-		on p.CategoryID = c.CategoryID
-		join [Order Details] as od
-		on od.ProductID = p.ProductID
-		join Orders as o
-		on o.OrderID = od.OrderID
-		join Customers as cu
-		on cu.CustomerID = o.CustomerID
+SELECT
+    TOP 0 
+    0 AS [productbk], 
+    p.ProductID, 
+    p.ProductName AS 'Producto',
+    cu.CompanyName AS 'Customer',  
+    c.CategoryName AS 'Category', 
+    od.UnitPrice, 
+    p.Discontinued, 
+    GETDATE() AS 'inserted_date'
+INTO products_new
+FROM Products AS p
+JOIN Categories AS c ON p.CategoryID = c.CategoryID
+JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+JOIN Orders AS o ON o.OrderID = od.OrderID
+JOIN Customers AS cu ON cu.CustomerID = o.CustomerID;
 
+ALTER TABLE products_new
+ADD CONSTRAINT pk_products_new PRIMARY KEY (productbk);
 
-		--
-		drop table products_new
-		-- crea
-		alter table products_new 
-		add productbk int not null identity (1,1)
-		--- asigna primary
-		alter table products_new
-		add constraint pk_products_new
-		primary key (productbk)
-
-		--- hjadghasghjsaghjdsajhdgjsagdjhsagdhjsaghjsa
-
-
-
-		insert into products_new (ProductID,Producto,Customer,Category,UnitPrice,Discontinued,inserted_date)
-		select
-			p.ProductID, p.ProductName,
-			cu.CompanyName,  c.CategoryName, od.UnitPrice, p.Discontinued, GETDATE() as 'insert_date'
-		from Products as p
-		join Categories as c
-		on p.CategoryID = c.CategoryID
-		join [Order Details] as od
-		on od.ProductID = p.ProductID
-		join Orders as o
-		on o.OrderID = od.OrderID
-		join Customers as cu
-		on cu.CustomerID = o.CustomerID
----inner 
---LEFT JOIN
+/* Carga Full */
 SELECT 
-	pn.ProductID,
-	pn.Producto,
-	pn.Customer,
-	pn.Category,
-	pn.UnitPrice,
-	pn.Discontinued,
-	pn.inserted_date,
-	p.ProductID,
-	p.ProductName
-FROM Products as p
- JOIN products_new AS pn
-ON p.ProductID = pn.ProductID
-WHERE pn.ProductID IS NULL
+    TOP 0 
+    p.ProductID, 
+    p.ProductName AS 'Producto',
+    cu.CompanyName AS 'Customer',  
+    c.CategoryName AS 'Category', 
+    od.UnitPrice, 
+    p.Discontinued, 
+    GETDATE() AS 'inserted_date'
+INTO products_new
+FROM Products AS p
+JOIN Categories AS c ON p.CategoryID = c.CategoryID
+JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+JOIN Orders AS o ON o.OrderID = od.OrderID
+JOIN Customers AS cu ON cu.CustomerID = o.CustomerID;
 
+-- Eliminar tabla si existe
+DROP TABLE products_new;
 
+-- Crear nueva tabla
+ALTER TABLE products_new 
+ADD productbk INT NOT NULL IDENTITY (1,1);
 
+-- Asignar clave primaria
+ALTER TABLE products_new
+ADD CONSTRAINT pk_products_new PRIMARY KEY (productbk);
 
---LEFT JOIN
+/* Insertar datos en la nueva tabla */
+INSERT INTO products_new (ProductID, Producto, Customer, Category, UnitPrice, Discontinued, inserted_date)
+SELECT
+    p.ProductID, 
+    p.ProductName,
+    cu.CompanyName,  
+    c.CategoryName, 
+    od.UnitPrice, 
+    p.Discontinued, 
+    GETDATE() AS 'insert_date'
+FROM Products AS p
+JOIN Categories AS c ON p.CategoryID = c.CategoryID
+JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+JOIN Orders AS o ON o.OrderID = od.OrderID
+JOIN Customers AS cu ON cu.CustomerID = o.CustomerID;
+
+-- INNER JOIN
+-- LEFT JOIN
 SELECT 
-	pn.ProductID,
-	pn.Producto,
-	pn.Customer,
-	pn.Category,
-	pn.UnitPrice,
-	pn.Discontinued,
-	pn.inserted_date,
-	p.ProductID,
-	p.ProductName
-FROM Products as p
-LEFT JOIN products_new AS pn
-ON p.ProductID = pn.ProductID
-WHERE pn.ProductID IS null
+    pn.ProductID,
+    pn.Producto,
+    pn.Customer,
+    pn.Category,
+    pn.UnitPrice,
+    pn.Discontinued,
+    pn.inserted_date,
+    p.ProductID,
+    p.ProductName
+FROM Products AS p
+JOIN products_new AS pn ON p.ProductID = pn.ProductID
+WHERE pn.ProductID IS NULL;
 
--- carga delta
+-- LEFT JOIN
+SELECT 
+    pn.ProductID,
+    pn.Producto,
+    pn.Customer,
+    pn.Category,
+    pn.UnitPrice,
+    pn.Discontinued,
+    pn.inserted_date,
+    p.ProductID,
+    p.ProductName
+FROM Products AS p
+LEFT JOIN products_new AS pn ON p.ProductID = pn.ProductID
+WHERE pn.ProductID IS NULL;
 
-insert into products_new (ProductID,producto,Customer,
-Category,UnitPrice,Discontinued, inserted_date)
-select p.ProductID, p.ProductName
-,[cu].CompanyName, 
-c.CategoryName, od.UnitPrice, 
-p.Discontinued, GETDATE() as 'inserted_date'
-from Products as p 
-left join 
-Categories as c 
-on p.CategoryID = c.CategoryID
-left join [Order Details] as od
-on od.ProductID = p.ProductID
-left join Orders as o
-on o.OrderID = od.OrderID
-left join Customers as [cu]
-on [cu].CustomerID = o.CustomerID
-left join products_new as pn
-on pn.ProductID = p.ProductID
-where pn.ProductID is null
-
-```
+/* Carga delta */
+INSERT INTO products_new (ProductID, Producto, Customer, Category, UnitPrice, Discontinued, inserted_date)
+SELECT 
+    p.ProductID, 
+    p.ProductName,
+    [cu].CompanyName, 
+    c.CategoryName, 
+    od.UnitPrice, 
+    p.Discontinued, 
+    GETDATE() AS 'inserted_date'
+FROM Products AS p 
+LEFT JOIN Categories AS c ON p.CategoryID = c.CategoryID
+LEFT JOIN [Order Details] AS od ON od.ProductID = p.ProductID
+LEFT JOIN Orders AS o ON o.OrderID = od.OrderID
+LEFT JOIN Customers AS [cu] ON [cu].CustomerID = o.CustomerID
+LEFT JOIN products_new AS pn ON pn.ProductID = p.ProductID
+WHERE pn.ProductID IS NULL;

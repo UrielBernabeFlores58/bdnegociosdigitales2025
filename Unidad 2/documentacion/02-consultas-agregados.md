@@ -1,136 +1,95 @@
-#  Consultas de Agregados
+# Consultas de Agregados
 
 ## Ejercicio 2 de la Unidad 2
 
-
-``` sql
-/* consultas de agregado 
-solo devuelven un solo registrp
-
-sum, avg, count, count(*), mas y min
-
-cuantos clientes tengo
+```sql
+/* Consultas de agregado
+   - Solo devuelven un solo registro.
+   - Funciones: SUM, AVG, COUNT, MIN, MAX.
 */
 
-select count(*) as [Numero de Clientes] from Customers
+-- ¿Cuántos clientes hay?
+SELECT COUNT(*) AS [Numero de Clientes] FROM Customers;
 
--- cuantas regiones hay
-select count(Region) as [Regiones] from Customers
+-- ¿Cuántas regiones hay?
+SELECT COUNT(Region) AS [Regiones] FROM Customers;
 
--- VERSION 2
-select count (distinct region) as [Regiones]
-from Customers
-where Region is not null
+-- Versión 2 (Regiones únicas y no nulas)
+SELECT COUNT(DISTINCT Region) AS [Regiones] FROM Customers WHERE Region IS NOT NULL;
 
+-- Contar órdenes y regiones de envío
+SELECT COUNT(*) FROM Orders;
+SELECT COUNT(ShipRegion) FROM Orders; -- COUNT no cuenta valores NULL.
 
-select count(*) from Orders
-select count(ShipRegion) from Orders -- count no cuenta nulos (null)
+/* Seleccionar el precio mínimo, máximo y el promedio de unidades en stock */
+SELECT MIN(UnitPrice) AS PrecioMinimo, 
+       MAX(UnitPrice) AS PrecioMaximo, 
+       AVG(UnitsInStock) AS PromedioStock 
+FROM Products;
 
-/*
-selecciona el precio bajo de los productos
-*/
+-- ¿Cuántos pedidos existen?
+SELECT COUNT(OrderID) FROM Orders;
 
+-- Calcular el total de dinero vendido
+SELECT SUM(UnitPrice * Quantity) AS TotalVentas FROM [Order Details];
+SELECT SUM(UnitPrice * Quantity - (UnitPrice * Quantity * Discount)) AS TotalConDescuento FROM [Order Details];
 
-	select min(UnitPrice), max (UnitPrice) ,
-	avg(UnitsInStock) 
-	from Products
--- SELECCIONAR CUANTOS PEDIDOS EXISTEN
+-- Calcular el total de unidades en stock de todos los productos
+SELECT SUM(UnitsInStock) AS [Total de Unidades] FROM Products;
 
-	select count(OrderID) from Orders
+/* Uso de GROUP BY */
 
--- CALCULA EL TOTAL DE DINERO VENDIDO 
+-- Seleccionar el número de productos por categoría
+SELECT CategoryID, COUNT(*) AS [Numero de Productos] FROM Products GROUP BY CategoryID;
 
-	select sum(UnitPrice * Quantity) from [Order Details]
-	
-	select sum(UnitPrice * Quantity- (UnitPrice * Quantity * Discount)) as Total from [Order Details]
-	
--- CALCULA EL TOTAL DE UNIDADRS EN STOCK DE TODOS LOS PRODUCTOS
+-- Seleccionar el número de productos por categoría con JOIN
+SELECT Categories.CategoryName, COUNT(*) AS [Numero de Productos] 
+FROM Categories 
+INNER JOIN Products AS p ON Categories.CategoryID = p.CategoryID 
+GROUP BY Categories.CategoryName;
 
+-- Calcular el precio promedio de los productos por categoría
+SELECT CategoryID, AVG(UnitPrice) AS [Precio Promedio] FROM Products GROUP BY CategoryID;
 
-select sum(UnitsInStock) as [Total de unidades] from Products
-/* 
----
-tema group by 
+-- Seleccionar el número de pedidos realizados por cada empleado
+SELECT EmployeeID, COUNT(*) AS [Numero de Pedidos] FROM Orders GROUP BY EmployeeID;
 
-sleccionar el numero de productos por categoria 
-*/
+-- Seleccionar el número de pedidos realizados por cada empleado en el último trimestre de 1996
+SELECT EmployeeID, COUNT(*) AS [Pedidos Realizados] 
+FROM Orders
+WHERE OrderDate BETWEEN '1996-10-01' AND '1996-12-31'
+GROUP BY EmployeeID;
 
-select * from Products
+-- Seleccionar la suma total de unidades vendidas por cada producto
+SELECT OrderID, ProductID, SUM(Quantity) AS [Unidades Vendidas] 
+FROM [Order Details] 
+GROUP BY OrderID, ProductID
+ORDER BY 2 DESC;
 
-select CategoryID, count(*) as 'Numero de producto'
-from Products
-group by CategoryID
+/* Seleccionar el número de productos por categoría,
+   pero solo aquellos que tengan más de 10 productos. */
 
+-- Paso 1: Visualizar los productos
+SELECT * FROM Products;
 
+-- Paso 2: Filtrar categorías específicas
+SELECT CategoryID FROM Products WHERE CategoryID IN (2,4,8) ORDER BY CategoryID ASC;
 
+-- Paso 3: Contar productos en cada categoría y filtrar los que tienen más de 10
+SELECT CategoryID, SUM(UnitsInStock) AS TotalStock 
+FROM Products 
+WHERE CategoryID IN (2,4,8)
+GROUP BY CategoryID
+HAVING COUNT(*) > 10
+ORDER BY CategoryID ASC;
 
-select Categories.CategoryName, 
-count(*) as [Numero de Productos]
-from Categories 
-inner join Products as p
-on Categories.CategoryID = p.CategoryID /*tambien se pude poner Categories.CategoryID*/
-group by Categories.CategoryName 
+/* Listar las órdenes agrupadas por empleado,
+   pero solo mostrar aquellos que hayan gestionado más de 10 pedidos. */
 
+SELECT * FROM Orders;
 
--- CALCULAR EL PRECIO PROMEDIO DE LOS PRODUCTOS POR CADA CATEGORIA
-
-select CategoryID, avg(UnitPrice) as 'Precio Promedio' from Products
-group by CategoryID
-
---seleccionar el numero de pedidos realizados por cada empleado por el ultimo trimestre
-
-select EmployeeID, count(*)as 'Numero de Pedidos' from Orders
-group by EmployeeID
-
-select EmployeeID, count(*) as 'Pedidos Realizados' from Orders
-where OrderDate between '1996-10-01' and '1996-12-31'
-Group by EmployeeID
--- seleccionar el numero de pedidos realizados por cada empleado
-
-select EmployeeID as Empleado,count(OrderID) as [Pedidos realizados por cada empleado] from Orders
-group by EmployeeID
-
--- seleccionar la suma total de unidades vendidas por cada producto 
-
-select OrderID,ProductID, sum(Quantity) as [Unidades Vendidas] from [Order Details]
-group by OrderID,ProductID
-order by 2 desc
-
-/*
-seleccionar el numero de productos por categoria, 
-pero solo aquellos que tengas mas de 10 productos
-*/
-
--- paso 1
-select * from Products
-
--- paso 2
-select CategoryID from Products
-where CategoryID in (2,4,8)
-order by CategoryID asc
-
--- paso 3
-
-select CategoryID, sum(UnitsInStock) from Products
-where CategoryID in (2,4,8)
-group by CategoryID
-having count(*)>10
-order by CategoryID asc
-
-
-/* listar las ordenes agrupadas por empleado, pero que solo muestre 
-aquellos que hayan gestionado mas de 10 pedidos */
-
-select * from Orders
-
-
-select OrderID, EmployeeID from Orders
-group by OrderID
-having count (*)>10
-
-
-
-
-
+SELECT EmployeeID, COUNT(*) AS [Pedidos Gestionados] 
+FROM Orders
+GROUP BY EmployeeID
+HAVING COUNT(*) > 10;
 ```
-## -----------------------------
