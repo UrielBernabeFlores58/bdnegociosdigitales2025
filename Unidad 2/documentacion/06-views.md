@@ -1,4 +1,4 @@
-# Vistas
+# Views/Vistas
 
 ## Ejercicio 6 de la Unidad 2
 ```sql

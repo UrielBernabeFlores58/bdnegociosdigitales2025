@@ -1,6 +1,6 @@
 # Transact Fechas, Cadenas, Instrucciones
 
-## ejercicio 7 de la unidad 2
+## Ejercicio 7 de la unidad 2
 
 ```sql
 -- Funciones de Cadena
