@@ -7,7 +7,7 @@
 
 `json
 
-use basede
+use db1
 
 `
 
@@ -569,12 +569,12 @@ db.libros.find({titulo: {$regex:/json/i}})
 ```
 Forma 2 de distinguir
 ```json
-db.libros.find({titulo: {$regex:/json/, $options:i}})
+db.libros.find({titulo: {$regex:/json/, $options:'i'}})
 ```
 
 Seleccionar todos los documentos donde el titulo comience con j y no distinga entre mayudculas y minusculas
 ```json
-db.libros.find({titulo: {$regex:/^j/, $options:i}})
+db.libros.find({titulo: {$regex:/^j/, $options:'i'}})
 ```
 seleccionar todos los libros donde el titulo termine con  es y no distinga entre mayusculas y minusculas
 ```json
@@ -618,5 +618,25 @@ db.libros.find(
 db.libros.find(
 {}
 ).size()
+
+db.libros.find({titulo: {$regex:/^j/ , $options: 'i' }}).size()
+```
+buscar todos los libros pero mostrando los primero 2
+
+```json
+db.libros.find({}).limit(2)
 ```
 
+```json
+db.libros.find({}).skip(2)
+```
+
+
+
+## Borrar Colecciones y base de datos
+```json
+db.libros.drop()
+```
+```json
+db.dropDatabase()
+```
